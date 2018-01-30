@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<header>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+		<script>
+		function changeText() { // this gets executed when called
+		var element = document.getElementByID("test");
+		if (element.innerHTML.match("SYDE 322")) {
+			element.innerHTML = "Hello World!";
+		} else {
+			element.innerHTML = "My SYDE 322 test script";
+		}
+		}
+		
+		function changeStyle1() {
+			// change text style to these specific properties
+			var element = document.getElementById("test");
+			element.style.fontSize = "60px";
+			element.style.fontFamily = "cursive";
+			element.style.color = "red";
+		}
+		
+		function writeText() { // generate a new page
+			document.open();
+			document.write('<!DOCTYPE html><html><body>');
+			document.write('<h2 id="test2" style="color:blue"> \
+			My first fully-generated HTML page!</h2>');
+			document.write('<p><input type="button" \
+			value="Go Back" onclick="window.history.back()"></p>');
+			document.write('</body></html>');
+			document.close();
+			}
+			</script>
+		</header>
+		<body>
+			<h1 id="test" onclick="changeText()">My SYDE 322 test script</h1>
+			<script>
+			// the following gets executed immediately
+			document.getElementById("test").innerHTML = "Hello World!";
+			</script>
+			
+			<p><input type="button" value="Style1>" onclick="changeStyle1()"></p>
+			
+			<p><input type="button" \
+			value="Generate New Page" onclick="writeText()"></p> </body>
+		</html>
