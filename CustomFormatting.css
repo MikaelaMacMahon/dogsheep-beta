@@ -1,0 +1,34 @@
+@font-face {
+    font-family: Avenir;
+    src: url(Avenir.ttf);
+}
+
+#bootstrap-overrides body, h1, p, button, label{
+	font-family: Avenir;
+	font-weight: normal;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+#Content
+{
+	height: 100%;
+}
+
+#FixedContent
+{
+	position: fixed;
+    width: 50%;
+    height: 100%;
+    z-index: 1;
+}
+#ScrollContent
+{
+	position: relative;
+    width: 50%;
+    margin-left: 50%;
+    z-index: 2;
+}
