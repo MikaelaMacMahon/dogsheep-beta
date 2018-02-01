@@ -1,5 +1,3 @@
-<script type="text/javascript">
-
 //event listeners
 var btn = document.getElementById("submitBtn");
 //error handling for different browsers
@@ -16,7 +14,7 @@ if(btn.addEventListener){
 function processInput(){
     //retrieve input text
     var textbox = document.getElementById("expr");
-    var inputEx = texbox.value;
+    var inputEx = textbox.value;
     //check validity of expression
     textbox.value = "WORKS";
     if(!checkValidity(inputEx)){
@@ -37,6 +35,12 @@ function processInput(){
 
 function checkValidity(){
 
+    //check if its empty
+    //ok formats include
+        // equation form y = A + B
+        //just the expression A + B
+        //spaces or no spaces - so get rid of them
+    //check if "variable" "=" "valid expression"
 
     return;
 }
