@@ -9,20 +9,31 @@ if(btn.addEventListener){
 }
 
 
-//TODO:: add enter listener
+//add enter button
+var textbox = document.getElementById("expr");
+textbox.addEventListener("keyup", function(event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        document.getElementById("submitBtn").click();
+    }
+});
+
+//define simplification rules
+var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "INVOLUTION":4, "COMPLEMENTS":5};
 
 function processInput(){
     //retrieve input text
-    var textbox = document.getElementById("expr");
     var inputEx = textbox.value;
     //check validity of expression
     textbox.value = "WORKS";
-    if(!checkValidity(inputEx)){
+   /* if(!checkValidity(inputEx)){
         //return error
         //TODO:: Return notification to user about incorrect format
         return;
-     }
-     
+    }*/
+    detectSimp("AB|(AB+1)");
+
+          
 
     //maybe set up a class or some way of tagging an expression (object with type and expression
     //process expressions
@@ -44,4 +55,102 @@ function checkValidity(){
 
     return;
 }
+
+/*TODO::
+
+  * butto interface (0, 1, A, B..., (), +, -, ~)
+  * 5 boolean simplification rules (ie. 1 + A = 1)
+        * apply the rules to the input expression
+        & = and
+        | = or
+        ^ = xor
+        ~ = NOT
+        ()
+        > 
+        < (shifts)
+        in reformat - count number of ands, ors, etc
+        treaat every phrase as a tree - ie. & is the parent to children of variables
+ 
+        First five:
+
+        A & ~A = 0
+        A&0 = 0
+        A&A = A
+        A&1 = A
+        A|1 = 1
+        A|0 = A
+        A&B|A&~B = A
+ 
+ */               
+function processBool(exp){
+    var simplified = false;
+    while(!simplified){
+    
+        params = detectSimp(exp);
+        if(!detectSimp){
+             simplified = true;
+        }
+        
+    }
+    //operation order of preference: () ~ > & ^ |
+    //split on operator - check fo simplification
+    //else return
+    //identify need for simplification  
+
+}
+
+
+function detectSimp(exp){
+    var code;
+    var range;
+    //locate last internal open bracket
+    for match in exp.search(/(\()\w/g){
+        var sec = exp.slice(match);
+
+        //check for " + 1"    
+        if(sec.test(/[^\)]*(\+1).*\)/g)){
+            exp = simplify(exp, code, match);
+            document.write(YAY);
+        } 
+
+   }
+   return true;
+
+    
+
+    //regex operations, parse, look for knowns
+    
+     //try regex alteration - match compoent before an after
+
+
+  
+
+
+}
+
+
+//call from detectSimp?
+function simplify(exp, code, startIndex){
+    switch(code){
+        case rules.IDENTITY:
+             //apply identity simp
+             break;
+        case rules.NULL_ELEMENT:
+             break;
+        case rules.IDEMPOTENCY:
+             break;
+        case rules.INVOLUTION:
+             break;
+        case rules.COMPLEMENTS:
+            break;
+      default:
+            return exp;
+    }
+}
+
+
+
+
+
+
 
