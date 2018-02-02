@@ -32,7 +32,9 @@ function processInput(){
         return;
     }*/
     detectSimp("AB|(AB+1)");
-
+    detectSimp("AB|(ABC +1)(ABGHT + 1)");
+    detectSimp("(AB+1)");
+    detectSimp("(TEST + (ABC +1)");
           
 
     //maybe set up a class or some way of tagging an expression (object with type and expression
@@ -106,12 +108,13 @@ function detectSimp(exp){
     var str = /(\()\w/g;
     while((match = str.exec(exp)) != null){
         var sec = exp.slice(match.index);
-
+        //check outer bracket first first front, last end)
         //check for " + 1"    
         var check = /[^\)]*(\+1).*\)/g;
         if(check.test(sec)){
             exp = simplify(exp, rules.NULL_ELEMENT, match.index);
             console.log("YAY");
+            break;
         } 
    }
    return true;
@@ -132,7 +135,12 @@ function simplify(exp, code, startIndex){
         case rules.NULL_ELEMENT:
              var ind = exp.search(/(\))\w/);
              if(ind != undefined){
-                 newExp = exp.slice(0,startIndex) + "(1)" + exp.substr(ind + 1);
+                 if(ind == -1){
+                     newExp = exp.slice(0,startIndex) + "(1)";
+                 }
+                 else{
+                     newExp = exp.slice(0,startIndex) + "(1)" + exp.slice(ind + 1);
+                 }
                  console.log(newExp);
                  return newExp;
              }
