@@ -86,7 +86,7 @@ function processBool(exp){
     var simplified = false;
     while(!simplified){
     
-        params = detectSimp(exp);
+//        params = detectSimp(exp);
         if(!detectSimp){
              simplified = true;
         }
@@ -101,41 +101,42 @@ function processBool(exp){
 
 
 function detectSimp(exp){
-    var code;
-    var range;
     //locate last internal open bracket
-    for match in exp.search(/(\()\w/g){
-        var sec = exp.slice(match);
+    var match = [];
+    var str = /(\()\w/g;
+    while((match = str.exec(exp)) != null){
+        var sec = exp.slice(match.index);
 
         //check for " + 1"    
-        if(sec.test(/[^\)]*(\+1).*\)/g)){
-            exp = simplify(exp, code, match);
-            document.write(YAY);
+        var check = /[^\)]*(\+1).*\)/g;
+        if(check.test(sec)){
+            exp = simplify(exp, rules.NULL_ELEMENT, match.index);
+            console.log("YAY");
         } 
-
    }
    return true;
 
-    
-
     //regex operations, parse, look for knowns
-    
      //try regex alteration - match compoent before an after
-
-
   
-
-
 }
 
 
 //call from detectSimp?
 function simplify(exp, code, startIndex){
+    var newExp = exp;
     switch(code){
         case rules.IDENTITY:
              //apply identity simp
              break;
         case rules.NULL_ELEMENT:
+             var ind = exp.search(/(\))\w/);
+             if(ind != undefined){
+                 newExp = exp.slice(0,startIndex) + "(1)" + exp.substr(ind + 1);
+                 console.log(newExp);
+                 return newExp;
+             }
+      
              break;
         case rules.IDEMPOTENCY:
              break;
