@@ -31,14 +31,15 @@ function processInput(){
         //TODO:: Return notification to user about incorrect format
         return;
     }*/
-    detectSimp("AB|(((AB+1)");
-    detectSimp("AB|(ABC+1)(ABGHT+1)");
-    detectSimp("(AB+1)");
-    detectSimp("(TEST + (ABC +1))");
           
-
-    //maybe set up a class or some way of tagging an expression (object with type and expression
-    //process expressions
+    var e1 = "AB|(AB+1)"
+    var e2 = "AB|(ABC+1)(ABGHT+1)" 
+    var e3 = "(AB + 1)"
+    var e4 = "(TEST + (ABC + 1))";
+    processBool(e1);
+    processBool(e2);
+    processBool(e3);
+    processBool(e4);
 
     //clear input textbook
     textbox.value = "";
@@ -84,6 +85,7 @@ function checkValidity(){
         A&B|A&~B = A
  
  */               
+//TODO:: pass in eqn
 function processBool(exp){
     var simplified = false;
     while(!simplified){
@@ -109,27 +111,30 @@ function detectSimp(exp){
     var str = /(\()/g;
     var test = /\(([^)]+)\)/g;
     var parseData = detectOrder(exp);
+    var tes2 = /(\((?!1))/g;
     //check outside of brackets
-    
-    var opnBrkt = exp.search(str);
-    console.log(opnBrkt); 
+    //make sure if match.index == 0, that '(' is the first character 
+    //var opnBrkt = exp.search(str);
+  //  console.log(opnBrkt); 
     var matchNum = 0; 
-    while((match = str.exec(exp)) != null){
+    while((match = tes2.exec(exp)) != null){
+       if(match.index == 0 && exp[0] != '('){
+           break;
+       }
+       console.log('index' + match.index);
        var sec = exp.slice(match.index);
        var check = /[^\)|\(]*(\+1).*\)/g;
        var check2 = /(\+1?=^\))/g;
        //fix to consider +1 at end of input (ignore stuff in brackets - or only if no closing bracket after) 
        if(check.test(sec)){
-            exp = simplify(exp, rules.NULL_ELEMENT, match.index, parseData.index[matchNum]);
+            var exp2 = simplify(exp, rules.NULL_ELEMENT, match.index, parseData.index[matchNum]);
             console.log("YAY");
+            return exp2;
+           // break;
        }
        
        matchNum++;
-       
-          
-
-
-       
+        
    }
    return true;
 
@@ -151,14 +156,14 @@ function detectOrder(exp){
     var bracket;
     for(var i = 0; i < exp.length; i++){
         ch = exp[i];
-        if(ch == open){
+        if((ch == open) && (exp[i+1] != '1')){
             stack.push(openCnt);
             order.push(1);
             index.push(1);
             openCnt++;
 
         }
-        else if(ch == closed){
+        else if((ch == closed) && (exp[i-2] + exp[i-1] != '(1')){
             closedCnt++;
             bracket = stack.pop();
             order[bracket] = closedCnt;
@@ -185,7 +190,8 @@ function simplify(exp, code, startIndex, endIndex){
         case rules.NULL_ELEMENT:
             // var ind = exp.search(/[^\(]*(\))\w*$/);
             if(startIndex != endIndex){             
-               newExp = exp.slice(0,startIndex) + "(1)" + exp.slice(endIndex + 1);
+                console.log("Exp" + endIndex);
+                newExp = exp.slice(0,startIndex) + "(1)" + exp.slice(endIndex + 1);
             }
             else{
                newExp = 1;
