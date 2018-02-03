@@ -31,10 +31,10 @@ function processInput(){
         //TODO:: Return notification to user about incorrect format
         return;
     }*/
-    detectSimp("AB|(AB+1)");
-    detectSimp("AB|(ABC +1)(ABGHT + 1)");
+    detectSimp("AB|(((AB+1)");
+    detectSimp("AB|(ABC+1)(ABGHT+1)");
     detectSimp("(AB+1)");
-    detectSimp("(TEST + (ABC +1)");
+    detectSimp("(TEST + (ABC +1))");
           
 
     //maybe set up a class or some way of tagging an expression (object with type and expression
@@ -104,18 +104,32 @@ function processBool(exp){
 
 function detectSimp(exp){
     //locate last internal open bracket
+    //set start and end indexes equal if no brackets to replace
     var match = [];
-    var str = /(\()\w/g;
+    var str = /(\()/g;
+    var test = /\(([^)]+)\)/g;
+    var parseData = detectOrder(exp);
+    //check outside of brackets
+    
+    var opnBrkt = exp.search(str);
+    console.log(opnBrkt); 
+    var matchNum = 0; 
     while((match = str.exec(exp)) != null){
-        var sec = exp.slice(match.index);
-        //check outer bracket first first front, last end)
-        //check for " + 1"    
-        var check = /[^\)]*(\+1).*\)/g;
-        if(check.test(sec)){
-            exp = simplify(exp, rules.NULL_ELEMENT, match.index);
+       var sec = exp.slice(match.index);
+       var check = /[^\)|\(]*(\+1).*\)/g;
+       var check2 = /(\+1?=^\))/g;
+       //fix to consider +1 at end of input (ignore stuff in brackets - or only if no closing bracket after) 
+       if(check.test(sec)){
+            exp = simplify(exp, rules.NULL_ELEMENT, match.index, parseData.index[matchNum]);
             console.log("YAY");
-            break;
-        } 
+       }
+       
+       matchNum++;
+       
+          
+
+
+       
    }
    return true;
 
@@ -124,36 +138,70 @@ function detectSimp(exp){
   
 }
 
+function detectOrder(exp){
+    var stack = [];
+    var order = [];
+    var index = [];
+    var open = '('
+    var closed = ')'
+    var ch;  
+    var openCnt = 0;
+    var closedCnt = 0;
+    var diff;
+    var bracket;
+    for(var i = 0; i < exp.length; i++){
+        ch = exp[i];
+        if(ch == open){
+            stack.push(openCnt);
+            order.push(1);
+            index.push(1);
+            openCnt++;
+
+        }
+        else if(ch == closed){
+            closedCnt++;
+            bracket = stack.pop();
+            order[bracket] = closedCnt;
+            index[bracket] = i;
+
+        }
+
+    }
+    console.log(order);
+    var par = {'order':order, 'index':index};
+    return par;
+
+}
+
+
 
 //call from detectSimp?
-function simplify(exp, code, startIndex){
+function simplify(exp, code, startIndex, endIndex){
     var newExp = exp;
     switch(code){
         case rules.IDENTITY:
-             //apply identity simp
-             break;
+            //apply identity simp
+            break;
         case rules.NULL_ELEMENT:
-             var ind = exp.search(/(\))\w/);
-             if(ind != undefined){
-                 if(ind == -1){
-                     newExp = exp.slice(0,startIndex) + "(1)";
-                 }
-                 else{
-                     newExp = exp.slice(0,startIndex) + "(1)" + exp.slice(ind + 1);
-                 }
-                 console.log(newExp);
-                 return newExp;
+            // var ind = exp.search(/[^\(]*(\))\w*$/);
+            if(startIndex != endIndex){             
+               newExp = exp.slice(0,startIndex) + "(1)" + exp.slice(endIndex + 1);
+            }
+            else{
+               newExp = 1;
              }
       
-             break;
-        case rules.IDEMPOTENCY:
-             break;
-        case rules.INVOLUTION:
-             break;
-        case rules.COMPLEMENTS:
+            console.log(newExp);
+            return newExp;
             break;
+        case rules.IDEMPOTENCY:
+            break;
+        case rules.INVOLUTION:
+            break;
+        case rules.COMPLEMENTS:
+           break;
       default:
-            return exp;
+           return exp;
     }
 }
 
