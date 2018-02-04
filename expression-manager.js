@@ -21,6 +21,9 @@ textbox.addEventListener("keyup", function(event) {
 //define simplification rules
 var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "INVOLUTION":4, "COMPLEMENTS":5};
 
+var op = {"NULL":0, "AND": 1, "OR":2};
+
+
 function processInput(){
     //retrieve input text
     var inputEx = textbox.value;
@@ -36,10 +39,18 @@ function processInput(){
     var e2 = "AB|(ABC+1)(ABGHT+1)+1" 
     var e3 = "(AB+1)"
     var e4 = "(TEST+(ABC+1))";
+    var e5 = "AB|(AB+0)"
+    var e6 = "AB|(ABC&1)(ABGHT&0)" 
+    var e7 = "(AB+0)"
+    var e8 = "(TEST+(ABC+0))";
     processBool(e1);
     processBool(e2);
     processBool(e3);
     processBool(e4);
+    processBool(e5);
+    processBool(e6);
+    processBool(e7);
+    processBool(e8);
 
     //clear input textbook
     textbox.value = "";
@@ -112,27 +123,46 @@ function detectSimp(exp, brackets){
     //if(brackets == false){
       //  return;
   //  }
-    
+    //only if +1 is at the end of a line
     var str = /(\()/g;
-    var test_1 = /\(([^)]+1)\)/g;
+    var test_x = /\(([^)]+1)\)/g;
     //var test_1 = /(\((?!1))/g;
-    var test_x = /(\+1)(?!\))/g;
-    var test_0 = /\(([^)]+0)\)/g;
-    //check for + 1 condition
+    var test_2 = /(\+1)(?!\))/g;
+   // var test_0 = /\(([^)]+0)\)/g;
+    var test_0 = /(\+0)(?!\))/g;
+    var test_1 = /(\&1)(?!\))/g;
     //var check2 = /(\+1?=^\))/g;
-    var exp2;
+    var test_3 = /(\&0)(?!\))/g;
+    var test_4 = /(\&0)(?!\))/g;
+    var test_5 = /(\&0)(?!\))/g;
+    var exp2 = exp;
     
     //Test for A + 0 condition
-    if(test_0.test(exp)){
-        exp2 = simplify(exp, rules.IDENTITY);
-        return exp2;
+    if(test_0.test(exp2)){
+        exp2 = simplify(exp2, rules.IDENTITY, op.OR);
+    }
+    //Test for A&1 condition
+    if(test_1.test(exp2)){
+        exp2 = simplify(exp2, rules.IDENTITY, op.AND);
     }  
     //Test for A + 1 condition
-    else if(test_x.test(exp)){
-        exp2 = simplify(exp, rules.NULL_ELEMENT);
-        return exp2;
+    if(test_2.test(exp2)){
+        exp2 = simplify(exp2, rules.NULL_ELEMENT, op.OR);
     }
-    else return exp;
+    //TODO:: Consider both directions -> 0&A and A&0
+    //Test for A&0 = 0
+    if(test_3.test(exp2)){
+        exp2 = simplify(exp2, rules.NULL_ELEMENT, op.AND);
+    }
+   /* //Test for A&A = A
+    if(test_4.test(exp2)){
+        exp2 = simplify(exp2, rules.IDEMPOTENCY, op.AND);
+    }
+    //Test for A+A=A
+    if(test_5.test(exp2)){
+        exp2 = simplify(exp2, rules.IDEMPOTENCY, op.OR);
+    }*/
+    return exp2;
 
        
 }
@@ -174,26 +204,48 @@ function detectOrder(exp){
 
 }
 
-
-
 //call from detectSimp?
-function simplify(exp, code){
+function simplify(exp, code, oper){
     var newExp = exp;
+    var str, str2;
     switch(code){
         //do 1.1 = 1
         case rules.IDENTITY:
-            //B(1) = B
-
-
-
+            //B&1 = B
+            if(oper == op.AND){
+                str = /\&1/;
+            }
             //B|0 = B
-
-        case rules.NULL_ELEMENT:
-            newExp = "1";
+            else if(oper = op.OR){
+                str = /\+0/;
+            }
+            newExp = exp.replace(str, "");
             return newExp;
-            break;
+        case rules.NULL_ELEMENT:
+            //B&0 = 0
+            if(oper == op.AND){
+                str = /([^\(|\)|\&|\||\^]*\&0)/g; 
+                str2 = /(0\&*[^\(|\)|\&|\||\^])/g; 
+                if(str.test(exp))
+                    newExp = exp.replace(str, "0"); 
+                else
+                    newExp = exp.replace(str2, "0"); 
+            }
+            //B+1 = 1 
+            else if(oper == op.OR){
+                newExp = "1";
+            } 
+
+            return newExp;
         case rules.IDEMPOTENCY:
-            break;
+            //B&B = B
+            if(oper == op.AND){
+            }
+            //B + B = B
+            else if(oper == op.OR){
+      
+            }
+            return newExp;
         case rules.INVOLUTION:
             break;
         case rules.COMPLEMENTS:
