@@ -41,7 +41,7 @@ function processInput(){
     var e4 = "(TEST+(ABC+1))";
     var e5 = "AB|(AB+0)"
     var e6 = "AB|(ABC&1)(ABGHT&0)" 
-    var e7 = "(AB+0)"
+    var e7 = "(AB+AB)"
     var e8 = "(TEST+(ABC+0))";
     processBool(e1);
     processBool(e2);
@@ -125,16 +125,12 @@ function detectSimp(exp, brackets){
   //  }
     //only if +1 is at the end of a line
     var str = /(\()/g;
-    var test_x = /\(([^)]+1)\)/g;
-    //var test_1 = /(\((?!1))/g;
     var test_2 = /(\+1)(?!\))/g;
-   // var test_0 = /\(([^)]+0)\)/g;
     var test_0 = /(\+0)(?!\))/g;
     var test_1 = /(\&1)(?!\))/g;
-    //var check2 = /(\+1?=^\))/g;
     var test_3 = /(\&0)(?!\))/g;
-    var test_4 = /(\&0)(?!\))/g;
-    var test_5 = /(\&0)(?!\))/g;
+    //var test_4 = /(\&0)(?!\))/g;
+    //var test_5 = /(\&0)(?!\))/g;
     var exp2 = exp;
     
     //Test for A + 0 condition
@@ -154,17 +150,36 @@ function detectSimp(exp, brackets){
     if(test_3.test(exp2)){
         exp2 = simplify(exp2, rules.NULL_ELEMENT, op.AND);
     }
-   /* //Test for A&A = A
-    if(test_4.test(exp2)){
-        exp2 = simplify(exp2, rules.IDEMPOTENCY, op.AND);
-    }
-    //Test for A+A=A
-    if(test_5.test(exp2)){
-        exp2 = simplify(exp2, rules.IDEMPOTENCY, op.OR);
-    }*/
+    //idempotency test 
+    exp2 = idemTest(exp2);
+    
     return exp2;
 
        
+}
+
+function idemTest(exp){
+    //OR test (B+B=B)
+    var str = /([^\(|\)|\&|\||\^|0|1]*\+*[^\(|\)|\&|\||\^|0|1])/g;
+    var str2 = /([^\(|\)|\&|\||\^|0|1]*\&*[^\(|\)|\&|\||\^|0|1])/g;
+    var test = /([^\(]*\b[a-z]*\+*[a-z]\b*[^\)])/g
+    var result, match;
+    var exp2 = exp;
+    while(match = test.exec(exp)){
+        result = match[1].split("+", 2);
+        if(result[0] == result[1]){
+            exp2 = exp.replace(match[1], result[0]);
+        }
+      
+    } 
+    while(match = str2.exec(exp)){
+        result = match[1].split("&", 2);
+        if(result[0] == result[1]){
+            exp2 = exp.replace(match[1], result[0]);
+        }
+      
+    } 
+    return exp2;
 }
 
 function detectOrder(exp){
@@ -213,11 +228,11 @@ function simplify(exp, code, oper){
         case rules.IDENTITY:
             //B&1 = B
             if(oper == op.AND){
-                str = /\&1/;
+                str = /\&1/g;
             }
             //B|0 = B
             else if(oper = op.OR){
-                str = /\+0/;
+                str = /\+0/g;
             }
             newExp = exp.replace(str, "");
             return newExp;
@@ -236,15 +251,6 @@ function simplify(exp, code, oper){
                 newExp = "1";
             } 
 
-            return newExp;
-        case rules.IDEMPOTENCY:
-            //B&B = B
-            if(oper == op.AND){
-            }
-            //B + B = B
-            else if(oper == op.OR){
-      
-            }
             return newExp;
         case rules.INVOLUTION:
             break;
