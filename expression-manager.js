@@ -41,7 +41,7 @@ function processInput(){
     var e4 = "(TEST+(ABC+1))";
     var e5 = "AB|(AB+0)"
     var e6 = "AB|(ABC&1)(ABGHT&0)" 
-    var e7 = "(AB+AB)"
+    var e7 = "(AB+AB)";
     var e8 = "(TEST+(ABC+0))";
     processBool(e1);
     processBool(e2);
@@ -162,10 +162,9 @@ function idemTest(exp){
     //OR test (B+B=B)
     var str = /([^\(|\)|\&|\||\^|0|1]*\+*[^\(|\)|\&|\||\^|0|1])/g;
     var str2 = /([^\(|\)|\&|\||\^|0|1]*\&*[^\(|\)|\&|\||\^|0|1])/g;
-    var test = /([^\(]*\b[a-z]*\+*[a-z]\b*[^\)])/g
     var result, match;
     var exp2 = exp;
-    while(match = test.exec(exp)){
+    while(match = str.exec(exp)){
         result = match[1].split("+", 2);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
