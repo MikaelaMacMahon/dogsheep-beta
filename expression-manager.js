@@ -33,9 +33,9 @@ function processInput(){
     }*/
           
     var e1 = "AB|(AB+1)"
-    var e2 = "AB|(ABC+1)(ABGHT+1) + 1" 
-    var e3 = "(AB + 1)"
-    var e4 = "(TEST + (ABC + 1))";
+    var e2 = "AB|(ABC+1)(ABGHT+1)+1" 
+    var e3 = "(AB+1)"
+    var e4 = "(TEST+(ABC+1))";
     processBool(e1);
     processBool(e2);
     processBool(e3);
@@ -61,21 +61,23 @@ function checkValidity(){
 
 //TODO:: pass in eqn
 function processBool(exp){
-    var simplified = false;
+    var lowInd, highInd, simExp, len, modExp;
+    //check without bracket analysis
+    exp = detectSimp(exp, true);
+    console.log("WITHOUT B:"  + exp);
+    //initiate bracket analysis
     var parseData = detectOrder(exp);
-    var ctr = 0;
-    var modExp;
-    //check all sets of parenthsessi (INCLUDING WITHOUT)
     var maxChecks = parseData.indexOp.length;
+    var simplified = false;
+    var ctr = 0;
     modExp = exp;
-    var lowInd, highInd, simExp, len;
-    //TODO:: modify so it only checks for parentheses once and adjusts indexes with mods
-    //DO A CHECK FOR NO BRACKETS
-    //DO A TEST INITALLY
-    while(!simplified){
+    
+    while(!simplified && maxChecks > 0){
         lowInd = parseData.indexOp[maxChecks - 1 - ctr];
         highInd = parseData.indexCls[maxChecks - 1 - ctr];
-        modExp = exp.slice(lowInd, highInd + 1);
+        console.log(parseData.indexCls);
+        console.log(highInd);
+        modExp = exp.slice(lowInd + 1, highInd);
         //check no brackets condition
         simExp = detectSimp(modExp, true);
         len = modExp.length - simExp.length;
@@ -88,10 +90,11 @@ function processBool(exp){
         if(len != 0){
             for(i = 0; i < maxChecks -1; i++){
                 if(parseData.indexOp[i] > highInd){
-                    parseData.indexOp[i] -= len;
+                    //confirm numbers
+                    parseData.indexOp[i] -= (len + 2);
                 }
                 if(parseData.indexCls[i] > highInd){
-                    parseData.indexCls[i] -= len;
+                    parseData.indexCls[i] -= (len + 2);
                 }
             } 
 
@@ -109,9 +112,11 @@ function detectSimp(exp, brackets){
     //if(brackets == false){
       //  return;
   //  }
+    
     var str = /(\()/g;
     var test_1 = /\(([^)]+1)\)/g;
     //var test_1 = /(\((?!1))/g;
+    var test_x = /(\+1)(?!\))/g;
     var test_0 = /\(([^)]+0)\)/g;
     //check for + 1 condition
     //var check2 = /(\+1?=^\))/g;
@@ -122,9 +127,8 @@ function detectSimp(exp, brackets){
         exp2 = simplify(exp, rules.IDENTITY);
         return exp2;
     }  
-
     //Test for A + 1 condition
-    if(test_1.test(exp)){
+    else if(test_x.test(exp)){
         exp2 = simplify(exp, rules.NULL_ELEMENT);
         return exp2;
     }
@@ -173,7 +177,7 @@ function detectOrder(exp){
 
 
 //call from detectSimp?
-function simplify(exp, codei, ){
+function simplify(exp, code){
     var newExp = exp;
     switch(code){
         //do 1.1 = 1
