@@ -33,7 +33,7 @@ function processInput(){
     }*/
           
     var e1 = "AB|(AB+1)"
-    var e2 = "AB|(ABC+1)(ABGHT+1)" 
+    var e2 = "AB|(ABC+1)(ABGHT+1) + 1" 
     var e3 = "(AB + 1)"
     var e4 = "(TEST + (ABC + 1))";
     processBool(e1);
@@ -59,61 +59,47 @@ function checkValidity(){
     return;
 }
 
-/*TODO::
-
-  * butto interface (0, 1, A, B..., (), +, -, ~)
-  * 5 boolean simplification rules (ie. 1 + A = 1)
-        * apply the rules to the input expression
-        & = and
-        | = or
-        ^ = xor
-        ~ = NOT
-        ()
-        > 
-        < (shifts)
-        in reformat - count number of ands, ors, etc
-        treaat every phrase as a tree - ie. & is the parent to children of variables
- 
-        First five:
-
-        A & ~A = 0
-        A&0 = 0
-        A&A = A
-        A&1 = A
-        A|1 = 1
-        A|0 = A
-        A&B|A&~B = A
- 
- */               
 //TODO:: pass in eqn
 function processBool(exp){
     var simplified = false;
     var parseData = detectOrder(exp);
-    var ctr = parseData.indexOp.length;
+    var ctr = 0;
     var modExp;
-    //check all sets of parenthsess
-    var maxChecks = parseData.indexOp.length + 1;
+    //check all sets of parenthsessi (INCLUDING WITHOUT)
+    var maxChecks = parseData.indexOp.length;
     modExp = exp;
-    var lowInd, highInd;
+    var lowInd, highInd, simExp, len;
     //TODO:: modify so it only checks for parentheses once and adjusts indexes with mods
+    //DO A CHECK FOR NO BRACKETS
+    //DO A TEST INITALLY
     while(!simplified){
-        lowInd = parseData.indexOp[ctr - 1];
-        highInd = parseData.indexCls[ctr - 1];
-        modExp = exp.slice(lowInd, highInd);
+        lowInd = parseData.indexOp[maxChecks - 1 - ctr];
+        highInd = parseData.indexCls[maxChecks - 1 - ctr];
+        modExp = exp.slice(lowInd, highInd + 1);
         //check no brackets condition
-        if(ctr == 0){
-   //         modExp = detectSimp(0, modExp, false);
+        simExp = detectSimp(modExp, true);
+        len = modExp.length - simExp.length;
+        console.log("len:" + len);
+        if(len != 0) exp = exp.slice(0, lowInd) + simExp + exp.slice(highInd + 1);
+        console.log("SimEXP" + simExp);
+        console.log("Exp:" + exp);
+        
+        //update indicies
+        if(len != 0){
+            for(i = 0; i < maxChecks -1; i++){
+                if(parseData.indexOp[i] > highInd){
+                    parseData.indexOp[i] -= len;
+                }
+                if(parseData.indexCls[i] > highInd){
+                    parseData.indexCls[i] -= len;
+                }
+            } 
+
         }
-        else{
-            console.log(modExp);
-            var modExp2 = detectSimp(modExp, true);
-            console.log(modExp2);
-        }
+        ctr++;        
         if(ctr == maxChecks){
              simplified = true;
         }
-
-        ctr++;        
     }
     //operation order of preference: () ~ > & ^ |
 }
@@ -124,15 +110,26 @@ function detectSimp(exp, brackets){
       //  return;
   //  }
     var str = /(\()/g;
-    var test = /\(([^)]+1)\)/g;
-    var tes2 = /(\((?!1))/g;
+    var test_1 = /\(([^)]+1)\)/g;
+    //var test_1 = /(\((?!1))/g;
+    var test_0 = /\(([^)]+0)\)/g;
     //check for + 1 condition
-    var check2 = /(\+1?=^\))/g;
-    if(tes2.test(exp)){
-        var exp2 = simplify(exp, rules.NULL_ELEMENT);
-        console.log("YAY");
+    //var check2 = /(\+1?=^\))/g;
+    var exp2;
+    
+    //Test for A + 0 condition
+    if(test_0.test(exp)){
+        exp2 = simplify(exp, rules.IDENTITY);
+        return exp2;
+    }  
+
+    //Test for A + 1 condition
+    if(test_1.test(exp)){
+        exp2 = simplify(exp, rules.NULL_ELEMENT);
         return exp2;
     }
+    else return exp;
+
        
 }
 
@@ -176,24 +173,19 @@ function detectOrder(exp){
 
 
 //call from detectSimp?
-function simplify(exp, code){
+function simplify(exp, codei, ){
     var newExp = exp;
     switch(code){
+        //do 1.1 = 1
         case rules.IDENTITY:
-            //apply identity simp
-            break;
+            //B(1) = B
+
+
+
+            //B|0 = B
+
         case rules.NULL_ELEMENT:
-            // var ind = exp.search(/[^\(]*(\))\w*$/);
-            /*if(startIndex != endIndex){             
-                console.log("Exp" + endIndex);
-                newExp = exp.slice(0,startIndex) + "1" + exp.slice(endIndex + 1);
-            }
-            else{
-               newExp = 1;
-             }*/
-            newExp = 1;
-      
-            console.log(newExp);
+            newExp = "1";
             return newExp;
             break;
         case rules.IDEMPOTENCY:
