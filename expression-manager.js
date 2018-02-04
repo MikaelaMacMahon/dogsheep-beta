@@ -88,65 +88,59 @@ function checkValidity(){
 //TODO:: pass in eqn
 function processBool(exp){
     var simplified = false;
+    var parseData = detectOrder(exp);
+    var ctr = parseData.indexOp.length;
+    var modExp;
+    //check all sets of parenthsess
+    var maxChecks = parseData.indexOp.length + 1;
+    modExp = exp;
+    var lowInd, highInd;
+    //TODO:: modify so it only checks for parentheses once and adjusts indexes with mods
     while(!simplified){
-    
-//        params = detectSimp(exp);
-        if(!detectSimp){
+        lowInd = parseData.indexOp[ctr - 1];
+        highInd = parseData.indexCls[ctr - 1];
+        modExp = exp.slice(lowInd, highInd);
+        //check no brackets condition
+        if(ctr == 0){
+   //         modExp = detectSimp(0, modExp, false);
+        }
+        else{
+            console.log(modExp);
+            var modExp2 = detectSimp(modExp, true);
+            console.log(modExp2);
+        }
+        if(ctr == maxChecks){
              simplified = true;
         }
-        
+
+        ctr++;        
     }
     //operation order of preference: () ~ > & ^ |
-    //split on operator - check fo simplification
-    //else return
-    //identify need for simplification  
-
 }
 
 
-function detectSimp(exp){
-    //locate last internal open bracket
-    //set start and end indexes equal if no brackets to replace
-    var match = [];
+function detectSimp(exp, brackets){
+    //if(brackets == false){
+      //  return;
+  //  }
     var str = /(\()/g;
-    var test = /\(([^)]+)\)/g;
-    var parseData = detectOrder(exp);
+    var test = /\(([^)]+1)\)/g;
     var tes2 = /(\((?!1))/g;
-    //check outside of brackets
-    //make sure if match.index == 0, that '(' is the first character 
-    //var opnBrkt = exp.search(str);
-  //  console.log(opnBrkt); 
-    var matchNum = 0; 
-    while((match = tes2.exec(exp)) != null){
-       if(match.index == 0 && exp[0] != '('){
-           break;
-       }
-       console.log('index' + match.index);
-       var sec = exp.slice(match.index);
-       var check = /[^\)|\(]*(\+1).*\)/g;
-       var check2 = /(\+1?=^\))/g;
-       //fix to consider +1 at end of input (ignore stuff in brackets - or only if no closing bracket after) 
-       if(check.test(sec)){
-            var exp2 = simplify(exp, rules.NULL_ELEMENT, match.index, parseData.index[matchNum]);
-            console.log("YAY");
-            return exp2;
-           // break;
-       }
+    //check for + 1 condition
+    var check2 = /(\+1?=^\))/g;
+    if(tes2.test(exp)){
+        var exp2 = simplify(exp, rules.NULL_ELEMENT);
+        console.log("YAY");
+        return exp2;
+    }
        
-       matchNum++;
-        
-   }
-   return true;
-
-    //regex operations, parse, look for knowns
-     //try regex alteration - match compoent before an after
-  
 }
 
 function detectOrder(exp){
     var stack = [];
     var order = [];
-    var index = [];
+    var indexCls = [];
+    var indexOp = [];
     var open = '('
     var closed = ')'
     var ch;  
@@ -159,7 +153,8 @@ function detectOrder(exp){
         if((ch == open) && (exp[i+1] != '1')){
             stack.push(openCnt);
             order.push(1);
-            index.push(1);
+            indexCls.push(1);
+            indexOp.push(i);
             openCnt++;
 
         }
@@ -167,13 +162,13 @@ function detectOrder(exp){
             closedCnt++;
             bracket = stack.pop();
             order[bracket] = closedCnt;
-            index[bracket] = i;
+            indexCls[bracket] = i;
 
         }
 
     }
-    console.log(order);
-    var par = {'order':order, 'index':index};
+    //may want to know order in the future?
+    var par = {'order':order, 'indexCls':indexCls, 'indexOp': indexOp};
     return par;
 
 }
@@ -181,7 +176,7 @@ function detectOrder(exp){
 
 
 //call from detectSimp?
-function simplify(exp, code, startIndex, endIndex){
+function simplify(exp, code){
     var newExp = exp;
     switch(code){
         case rules.IDENTITY:
@@ -189,13 +184,14 @@ function simplify(exp, code, startIndex, endIndex){
             break;
         case rules.NULL_ELEMENT:
             // var ind = exp.search(/[^\(]*(\))\w*$/);
-            if(startIndex != endIndex){             
+            /*if(startIndex != endIndex){             
                 console.log("Exp" + endIndex);
-                newExp = exp.slice(0,startIndex) + "(1)" + exp.slice(endIndex + 1);
+                newExp = exp.slice(0,startIndex) + "1" + exp.slice(endIndex + 1);
             }
             else{
                newExp = 1;
-             }
+             }*/
+            newExp = 1;
       
             console.log(newExp);
             return newExp;
