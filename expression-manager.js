@@ -35,14 +35,14 @@ function processInput(){
         return;
     }*/
           
-    var e1 = "AB|(AB+1)"
-    var e2 = "AB|(ABC+1)(ABGHT+1)+1" 
-    var e3 = "(AB+1)"
-    var e4 = "(TEST+(ABC+1))";
-    var e5 = "AB|(AB+0)"
+    var e1 = "AB|(AB|1)"
+    var e2 = "AB|(ABC|1)(ABGHT|1)|1" 
+    var e3 = "(AB|1)"
+    var e4 = "(TEST|(ABC|1))";
+    var e5 = "AB|(AB|0)"
     var e6 = "AB|(ABC&1)(ABGHT&0)" 
-    var e7 = "(AB+AB)";
-    var e8 = "(TEST+(ABC+0))";
+    var e7 = "(AB|AB)";
+    var e8 = "(TEST|(ABC|0))";
     processBool(e1);
     processBool(e2);
     processBool(e3);
@@ -125,8 +125,8 @@ function detectSimp(exp, brackets){
   //  }
     //only if +1 is at the end of a line
     var str = /(\()/g;
-    var test_2 = /(\+1)(?!\))/g;
-    var test_0 = /(\+0)(?!\))/g;
+    var test_2 = /(\|1)(?!\))/g;
+    var test_0 = /(\|0)(?!\))/g;
     var test_1 = /(\&1)(?!\))/g;
     var test_3 = /(\&0)(?!\))/g;
     //var test_4 = /(\&0)(?!\))/g;
@@ -160,12 +160,12 @@ function detectSimp(exp, brackets){
 
 function idemTest(exp){
     //OR test (B+B=B)
-    var str = /([^\(|\)|\&|\||\^|0|1]*\+*[^\(|\)|\&|\||\^|0|1])/g;
+    var str = /([^\(|\)|\&|\||\^|0|1]*\|*[^\(|\)|\&|\||\^|0|1])/g;
     var str2 = /([^\(|\)|\&|\||\^|0|1]*\&*[^\(|\)|\&|\||\^|0|1])/g;
     var result, match;
     var exp2 = exp;
     while(match = str.exec(exp)){
-        result = match[1].split("+", 2);
+        result = match[1].split("|", 2);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
         }
@@ -231,7 +231,7 @@ function simplify(exp, code, oper){
             }
             //B|0 = B
             else if(oper = op.OR){
-                str = /\+0/g;
+                str = /\|0/g;
             }
             newExp = exp.replace(str, "");
             return newExp;
