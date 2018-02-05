@@ -1,5 +1,5 @@
 # SYDE 322 Assignment 1 - DogSheep Beta
-## Authors: Daphne Walford (....) & Mikaela MacMahon(20601136)
+## Authors: Daphne Walford (20603000) & Mikaela MacMahon(20601136)
 
 
 ### Description:
