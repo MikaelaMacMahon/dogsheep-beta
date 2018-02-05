@@ -12,10 +12,18 @@ A total of 6 simplifcation rules have been implemented:
 * A|1 = 1
 * A&A = A
 * A|A = A
-
 These rules can be applied to expression both with an without brackets. Some example use cases, with corresponding output from the program is provided below.
 
-
+#### Example Usage:
+* AB|(AB|1) = 1
+* AB|(ABC|1)(ABGHT|1))|1 = 1
+* (AB|1) = 1
+* (ABCD|(ABC|1))
+* AB|(AB|0) = AB
+* AB|(ABC&1)(ABGHT&0) = AB|ABC0 
+* (AB|AB) = (AB)
+* (ABCD|(ABC|0)) = (ABCD|ABC)
+* (ABCD&ABCD) = (ABCD)
 
 Implemented simplifcation rules
 Example usage 
