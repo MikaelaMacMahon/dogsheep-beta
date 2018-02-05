@@ -20,72 +20,171 @@
 				<p>Welcome. Please enter your expression below.</p>
 			</div>
 			<div class="row">
-			  <div class="col-sm-8">
-			  <input type="text" class="form-control" id="expr">
-			  </div>
-			  <div class="col-sm-4">
-			  <button type="button" id="submitBtn" class="btn btn-info">Submit</button>
+				<div class="col-sm-8">
+					<input type="text" class="form-control" id="expr">
+				</div>
+				<div class="col-sm-4">
+					<button type="button" id="submitBtn" class="btn btn-info">Submit</button>
+				</div>
+			</div>
+				
+			<div id="Calculator">
+				<div class="row">
+					<div class="col-md-2">
+						<button onclick="inputChar(0)" type="button" id="addVariableBtn" class="btn btn-block calcBtn-1">add variable</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(1)" type="button" id="andBtn" class="btn btn-block calcBtn-1">AND</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(2)" type="button" id="orBtn" class="btn btn-block calcBtn-1">OR</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(3)" type="button" id="clearBtn" class="btn btn-block calcBtn-2">clear</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(4)" type="button" id="backspaceBtn" class="btn btn-block calcBtn-2">backspace</button>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col-md-2">
+						<button onclick="inputChar(5)" type="button" id="notBtn" class="btn btn-block calcBtn-1">NOT</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(6)" type="button" id="nandBtn" class="btn btn-block calcBtn-1">NAND</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(7)" type="button" id="norBtn" class="btn btn-block calcBtn-1">NOR</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(8)" type="button" id="openBtn" class="btn btn-block calcBtn-2">(</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(9)" type="button" id="closeBtn" class="btn btn-block calcBtn-2">)</button>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col-md-3">
+						<button onclick="inputChar(10)" type="button" id="notBtn" class="btn btn-block calcBtn-1">XOR</button>
+					</div>
+					<div class="col-md-3">
+						<button onclick="inputChar(11)" type="button" id="nandBtn" class="btn btn-block calcBtn-1">XNOR</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(12)" type="button" id="leftArrBtn" class="btn btn-block calcBtn-2">&#8592 </button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(13)" type="button" id="rightArrBtn" class="btn btn-block calcBtn-2">&#8594 </button>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col-md-1" style="width: 12.499999995%">
+						<button onclick="inputChar(14)" type="button" id="sllBtn" class="btn btn-block calcBtn-1">SLL</button>
+					</div>
+					<div class="col-md-1" style="width: 12.499999995%">
+						<button onclick="inputChar(15)" type="button" id="srlBtn" class="btn btn-block calcBtn-1">SRL</button>
+					</div>
+					<div class="col-md-1" style="width: 12.499999995%">
+						<button  onclick="inputChar(16)"type="button" id="rolBtn" class="btn btn-block calcBtn-1">ROL</button>
+					</div>
+					<div class="col-md-1" style="width: 12.499999995%">
+						<button onclick="inputChar(17)" type="button" id="rorBtn" class="btn btn-block calcBtn-1">ROR</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(18)" type="button" id="plusBtn" class="btn btn-block calcBtn-3">+</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(19)" type="button" id="minusBtn" class="btn btn-block calcBtn-3">-</button>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col-md-2">
+						<button onclick="inputChar(20)" type="button" id="zeroBtn" class="btn btn-block calcBtn-4">0</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(21)" type="button" id="oneBtn" class="btn btn-block calcBtn-4">1</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(22)" type="button" id="twoBtn" class="btn btn-block calcBtn-4">2</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(23)" type="button" id="multBtn" class="btn btn-block calcBtn-3">*</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(24)" type="button" id="divBtn" class="btn btn-block calcBtn-3">/</button>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col-md-2">
+						<button onclick="inputChar(25)" type="button" id="threeBtn" class="btn btn-block calcBtn-4">3</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(26)" type="button" id="fourBtn" class="btn btn-block calcBtn-4">4</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(27)" type="button" id="fiveBtn" class="btn btn-block calcBtn-4">5</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(28)" type="button" id="powerBtn" class="btn btn-block calcBtn-3">^</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(29)" type="button" id="sqrtBtn" class="btn btn-block calcBtn-3">&#8730 </button>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col-md-2">
+						<button onclick="inputChar(30)" type="button" id="sixBtn" class="btn btn-block calcBtn-4">6</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(31)" type="button" id="sevenBtn" class="btn btn-block calcBtn-4">7</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(32)" type="button" id="eightBtn" class="btn btn-block calcBtn-4">8</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(33)" type="button" id="xBtn" class="btn btn-block calcBtn-3">x</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(34)" type="button" id="yBtn" class="btn btn-block calcBtn-3">y</button>
+					</div>
+				</div>
+			
+				<div class="row">
+					<div class="col-md-2">
+						<button onclick="inputChar(35)" type="button" id="nineBtn" class="btn btn-block calcBtn-4">9</button>
+					</div>
+					<div class="col-md-4">
+						<button onclick="inputChar(36)" type="button" id="commaBtn" class="btn btn-block calcBtn-5">,</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(37)" type="button" id="openBraceBtn" class="btn btn-block calcBtn-5">}</button>
+					</div>
+					<div class="col-md-2">
+						<button onclick="inputChar(38)" type="button" id="closeBraceBtn" class="btn btn-block calcBtn-5">}</button>
+					</div>
+				</div>
+				
+				
+
 			  </div>
 			</div>
 	                <script src="expression-manager.js"></script>
 		</div>
 
 		<div id="ScrollContent">
-			
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
-			<p>Results go here.</p>
+		<p id="output"> </p>
 			
 		</div>
 	</div>
-
-
-		
-		<div class="form-group">
-		  
-		</div>
-</div>
+	<div class="form-group">
+	  
+	</div>
 
 </body>
 </html> 

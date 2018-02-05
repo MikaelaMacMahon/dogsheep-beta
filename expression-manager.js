@@ -13,19 +13,31 @@ if(btn.addEventListener){
 
 function processInput(){
     //retrieve input text
-    var textbox = document.getElementById("expr");
-    var inputEx = textbox.value;
+	var textbox = document.getElementById("expr");
+    var output = document.getElementById("output");
+    var input = {expr:textbox.value, errorStatus:0, type:null};
     //check validity of expression
-    textbox.value = "WORKS";
-    if(!checkValidity(inputEx)){
-        //return error
-        //TODO:: Return notification to user about incorrect format
-        return;
-     }
-     
-
-    //maybe set up a class or some way of tagging an expression (object with type and expression
-    //process expressions
+    checkValidity(input);
+    if (input.errorStatus) {
+        switch(input.errorStatus) {
+            case 1: {
+            // tell them that it is an empty string
+			output.innerHTML = "Input field empty.";
+			return;
+			}
+			case 2: {
+			//tell them that expression cannot include characters other than...
+			output.innerHTML = "Input cannot include characters other than letters, 0, 1, ', |, +, *, &, space, and ^.";
+			return;
+			}
+		}
+	}
+	
+	// replace AND, OR, and NOT with symbols
+	formatExpr(input);
+	
+	// remove spaces
+	input.expr = input.expr.replace(/\s/g, "");
 
     //clear input textbook
     textbox.value = "";
@@ -33,15 +45,21 @@ function processInput(){
 }
 
 
-function checkValidity(){
-
-    //check if its empty
-    //ok formats include
-        // equation form y = A + B
-        //just the expression A + B
-        //spaces or no spaces - so get rid of them
-    //check if "variable" "=" "valid expression"
-
+function checkValidity(input){
+    //check if it's empty
+	if (input.expr == "") {
+		input.errorStatus = 1;
+		return;
+	}
+	else if (input.expr.match(/[^A-Za-z0-1\^\&\|\+\'\* ]/g)) {
+		input.errorStatus = 2;
+		return;
+	}
     return;
 }
 
+function formatExpr(input){
+	input.expr.replace("AND","&");
+	input.expr.replace("OR","|");
+	input.expr.replace("NOT","~");
+}
