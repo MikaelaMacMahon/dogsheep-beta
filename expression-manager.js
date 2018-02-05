@@ -53,8 +53,7 @@ function processInput(){
     processBool(e7);
     processBool(e8);
     processBool(e9);
-
-
+    
     //clear input textbook
     textbox.value = "";
 
@@ -77,8 +76,7 @@ function checkValidity(){
 function processBool(exp){
     var lowInd, highInd, simExp, len, modExp;
     //check without bracket analysis
-    exp = detectSimp(exp, true);
-    console.log("WITHOUT B:"  + exp);
+    exp = detectSimp(exp);
     //initiate bracket analysis
     var parseData = detectOrder(exp);
     var maxChecks = parseData.indexOp.length;
@@ -89,22 +87,16 @@ function processBool(exp){
     while(!simplified && maxChecks > 0){
         lowInd = parseData.indexOp[maxChecks - 1 - ctr];
         highInd = parseData.indexCls[maxChecks - 1 - ctr];
-        console.log(parseData.indexCls);
-        console.log(highInd);
         modExp = exp.slice(lowInd + 1, highInd);
         //check no brackets condition
-        simExp = detectSimp(modExp, true);
+        simExp = detectSimp(modExp);
         len = modExp.length - simExp.length;
-        console.log("len:" + len);
         if(len != 0) exp = exp.slice(0, lowInd) + simExp + exp.slice(highInd + 1);
-        console.log("SimEXP" + simExp);
-        console.log("Exp:" + exp);
         
         //update indicies
         if(len != 0){
             for(i = 0; i < maxChecks -1; i++){
                 if(parseData.indexOp[i] > highInd){
-                    //confirm numbers
                     parseData.indexOp[i] -= (len + 2);
                 }
                 if(parseData.indexCls[i] > highInd){
@@ -118,22 +110,19 @@ function processBool(exp){
              simplified = true;
         }
     }
+    //process equation one more time to catch stragglers
+    exp = detectSimp(exp);
+    console.log("Exp:" + exp);
     //operation order of preference: () ~ > & ^ |
 }
 
 
-function detectSimp(exp, brackets){
-    //if(brackets == false){
-      //  return;
-  //  }
-    //only if +1 is at the end of a line
+function detectSimp(exp){
     var str = /(\()/g;
     var test_2 = /(\|1)(?!\))/g;
     var test_0 = /(\|0)(?!\))/g;
     var test_1 = /(\&1)(?!\))/g;
     var test_3 = /(\&0)(?!\))/g;
-    //var test_4 = /(\&0)(?!\))/g;
-    //var test_5 = /(\&0)(?!\))/g;
     var exp2 = exp;
     
     //Test for A + 0 condition
@@ -157,27 +146,23 @@ function detectSimp(exp, brackets){
     exp2 = idemTest(exp2);
     
     return exp2;
-
-       
 }
 
 function idemTest(exp){
     //OR test (B+B=B)
-    var str = /([^\(|\)|\&|\||\^|0|1]*\|[^\(|\)|\&|\||\^|0|1]*)/g;
-    var str2 = /([^\(|\)|\&|\||\^|0|1]*\&[^\(|\)|\&|\||\^|0|1]*)/g;
+    var str = /([^\(|\)|\&|\||0|1]*\|[^\(|\)|\&|\||\^|0|1]*)/g;
+    var str2 = /([^\(|\)|\&|\||0|1]*\&[^\(|\)|\&|\||\^|0|1]*)/g;
     var result, match;
     var exp2 = exp;
     while(match = str.exec(exp)){
-        console.log("Yup");
         result = match[1].split("|", 2);
-        console.log("match:" + match[1]);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
         }
       
-    } 
+    }
+    //AND test (B&B=B) 
     while(match = str2.exec(exp)){
-        console.log("Found");
         result = match[1].split("&", 2);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
