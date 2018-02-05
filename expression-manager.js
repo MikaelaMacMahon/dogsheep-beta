@@ -43,6 +43,7 @@ function processInput(){
     var e6 = "AB|(ABC&1)(ABGHT&0)" 
     var e7 = "(AB|AB)";
     var e8 = "(TEST|(ABC|0))";
+    var e9 = "(TEST&TEST)";
     processBool(e1);
     processBool(e2);
     processBool(e3);
@@ -51,6 +52,8 @@ function processInput(){
     processBool(e6);
     processBool(e7);
     processBool(e8);
+    processBool(e9);
+
 
     //clear input textbook
     textbox.value = "";
@@ -160,18 +163,21 @@ function detectSimp(exp, brackets){
 
 function idemTest(exp){
     //OR test (B+B=B)
-    var str = /([^\(|\)|\&|\||\^|0|1]*\|*[^\(|\)|\&|\||\^|0|1])/g;
-    var str2 = /([^\(|\)|\&|\||\^|0|1]*\&*[^\(|\)|\&|\||\^|0|1])/g;
+    var str = /([^\(|\)|\&|\||\^|0|1]*\|[^\(|\)|\&|\||\^|0|1]*)/g;
+    var str2 = /([^\(|\)|\&|\||\^|0|1]*\&[^\(|\)|\&|\||\^|0|1]*)/g;
     var result, match;
     var exp2 = exp;
     while(match = str.exec(exp)){
+        console.log("Yup");
         result = match[1].split("|", 2);
+        console.log("match:" + match[1]);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
         }
       
     } 
     while(match = str2.exec(exp)){
+        console.log("Found");
         result = match[1].split("&", 2);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
