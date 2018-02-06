@@ -3,7 +3,7 @@
 
 
 ### Description:
-DogSheep Beta is an adaption of "WolfRam Alpha" currently designed to accept Boolean expression inputs, and simplify the equations according to a set of common rules. Input can either be received as test input, or entered using the provided button interface. Once entered, the expression is validated and reformatted for processing. Equations are processed according to the order-of-operations, where the most internal parentheses group is processed first, before working its way outward. Several simplification rules can then be iteratively applied to these subsections, to produce a simplified expression. Once simplified, the modified expressed is then displayed to the user for review. 
+DogSheep Beta is an adaption of "Wolfram Alpha" currently designed to accept Boolean expression inputs, and simplify the equations according to a set of common rules. Input can either be received as test input, or entered using the provided button interface. Once entered, the expression is validated and reformatted for processing. Equations are processed according to the order-of-operations, where the most internal parentheses group is processed first, before working its way outward. Several simplification rules can then be iteratively applied to these subsections, to produce a simplified expression. Once simplified, the modified expressed is then displayed to the user for review. 
 
 ### How to Use:
 A total of 6 simplification rules have been implemented:
