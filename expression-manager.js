@@ -26,7 +26,8 @@ var keys = ["addVar", "&", "|", "clear", "back",
 			"3", "4", "5", "x", "y",
 			"6", "7", "8", "{", "}",
 			"9", ","];
-			
+
+var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
 //define simplification rules
 var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "INVOLUTION":4, "COMPLEMENTS":5};
 
@@ -34,20 +35,37 @@ var op = {"NULL":0, "AND": 1, "OR":2};
 
 function inputChar(keyIn) {
 	var textbox = document.getElementById("expr");
+	var letters;
 	if (keyIn == 0) {
-		textbox.value = 'ZERO';
-		// add variable
+		// extract letters
+		letters = textbox.value.replace(/[^A-Za-z]/g, "");
+		console.log("letters1: " + letters);
+		if (letters == "") {
+			textbox.value = "A";
+			return;
+		}
+		// alphabetise letters
+		letters = letters.toUpperCase().split('').sort().join('');
+		console.log("letters2: " + letters);
+		// get index of letter alphabetically after last letter
+		console.log("letters3: " + alphabet.indexOf(letters.substr(letters.length-1)));
+		console.log("letters4: " + alphabet[alphabet.indexOf(letters.substr(letters.length-1))+1]);
+		textbox.value += alphabet[alphabet.indexOf(letters.substr(letters.length-1))+1];
+		return;
 	}
 	else if (keyIn == 3) {
 		textbox.value = null;
+		return;
 	}
 	else if (keyIn == 4) {
 		textbox.value = textbox.value.slice(0, -1);
+		return;
 	}
 	
 	// whenever calculator button is clicked
 	else {
 		textbox.value += keys[keyIn];
+		return;
 	}
 }
 
@@ -317,8 +335,3 @@ function simplify(exp, code, oper){
            return exp;
     }
 }
-
-
-
-
-
