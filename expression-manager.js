@@ -75,6 +75,8 @@ function processInput(){
     var textbox = document.getElementById("expr");
     var output = document.getElementById("output");
     var input = {expr:textbox.value, errorStatus:0, type:null};
+	var origInput = input.expr;
+	output.innerHTML = "";
     //check validity of expression
     checkValidity(input);
     if (input.errorStatus) {
@@ -100,7 +102,8 @@ function processInput(){
      console.log("Spaces removed: " + input.expr);
 	input.expr = processBool(input.expr);
     
-	output.innerHTML += "Exp: " + input.expr + "<br>";
+	output.innerHTML += "Initial input: " + origInput + "<br>";
+	output.innerHTML += "Result: " + input.expr + "<br>";
 	
     //clear input textbox
     textbox.value = "";
