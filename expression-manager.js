@@ -19,13 +19,13 @@ textbox.addEventListener("keyup", function(event) {
 });
 
 var keys = ["addVar", "&", "|", "clear", "back", 
-			"~", "nand", "nor", "(", ")",
-			"xor", "xnor", "+", "-",
-			"sll", "srl", "rol", "ror", "*", "/",
-			"0", "1", "2", "^", "&#8730", 
-			"3", "4", "5", "x", "y",
-			"6", "7", "8", "{", "}",
-			"9", ","];
+            "~", "nand", "nor", "(", ")",
+            "xor", "xnor", "+", "-",
+            "sll", "srl", "rol", "ror", "*", "/",
+            "0", "1", "2", "^", "&#8730", 
+            "3", "4", "5", "x", "y",
+            "6", "7", "8", "{", "}",
+            "9", ","];
 
 var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
 //define simplification rules
@@ -34,39 +34,40 @@ var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "INVOLUT
 var op = {"NULL":0, "AND": 1, "OR":2};
 
 function inputChar(keyIn) {
-	var textbox = document.getElementById("expr");
-	var letters;
-	if (keyIn == 0) {
-		// extract letters
-		letters = textbox.value.replace(/[^A-Za-z]/g, "");
-		console.log("letters1: " + letters);
-		if (letters == "") {
-			textbox.value = "A";
-			return;
+    var textbox = document.getElementById("expr");
+    var letters;
+    if (keyIn == 0) {
+        // extract letters
+        letters = textbox.value.replace(/[^A-Za-z]/g, "");
+        if (letters == "") {
+            textbox.value = "A";
+            return;
+        }
+        // alphabetise letters
+        letters = letters.toUpperCase().split('').sort().join('');
+        // get index of letter alphabetically after last letter
+		if (letters.substr(letters.length-1) == "Z") {
+		    textbox.value += "Z";
 		}
-		// alphabetise letters
-		letters = letters.toUpperCase().split('').sort().join('');
-		console.log("letters2: " + letters);
-		// get index of letter alphabetically after last letter
-		console.log("letters3: " + alphabet.indexOf(letters.substr(letters.length-1)));
-		console.log("letters4: " + alphabet[alphabet.indexOf(letters.substr(letters.length-1))+1]);
-		textbox.value += alphabet[alphabet.indexOf(letters.substr(letters.length-1))+1];
-		return;
-	}
-	else if (keyIn == 3) {
-		textbox.value = null;
-		return;
-	}
-	else if (keyIn == 4) {
-		textbox.value = textbox.value.slice(0, -1);
-		return;
-	}
-	
-	// whenever calculator button is clicked
-	else {
-		textbox.value += keys[keyIn];
-		return;
-	}
+		else {
+            textbox.value += alphabet[alphabet.indexOf(letters.substr(letters.length-1))+1];
+		}
+        return;
+    }
+    else if (keyIn == 3) {
+        textbox.value = null;
+        return;
+    }
+    else if (keyIn == 4) {
+        textbox.value = textbox.value.slice(0, -1);
+        return;
+    }
+    
+    // whenever calculator button is clicked
+    else {
+        textbox.value += keys[keyIn];
+        return;
+    }
 }
 
 function processInput(){
@@ -80,45 +81,30 @@ function processInput(){
         switch(input.errorStatus) {
             case 1: {
             // tell them that it is an empty string
-			output.innerHTML = "Input field empty.";
-			return;
-			}
-			case 2: {
-			//tell them that expression cannot include characters other than...
-			output.innerHTML = "Input cannot include characters other than letters, 0, 1, ', |, +, *, &, space, and ^.";
-			return;
-			}
-		}
-	}
-	
-	// replace AND, OR, and NOT with symbols
-	formatExpr(input);
-	
-	// remove spaces
-	input.expr = input.expr.replace(/\s/g, "");
-          
-    var e1 = "AB|(AB|1)"
-    var e2 = "AB|(ABC|1)(ABGHT|1)|1" 
-    var e3 = "(AB|1)"
-    var e4 = "(TEST|(ABC|1))";
-    var e5 = "AB|(AB|0)"
-    var e6 = "AB|(ABC&1)(ABGHT&0)" 
-    var e7 = "(AB|AB)";
-    var e8 = "(TEST|(ABC|0))";
-    var e9 = "(TEST&TEST)";
-    processBool(e1);
-    processBool(e2);
-    processBool(e3);
-    processBool(e4);
-    processBool(e5);
-    processBool(e6);
-    processBool(e7);
-    processBool(e8);
-    processBool(e9);
+            output.innerHTML = "Input field empty.";
+            return;
+            }
+            case 2: {
+            //tell them that expression cannot include characters other than...
+            output.innerHTML = "Input cannot include characters other than letters, 0, 1, ', |, +, *, &, space, and ^.";
+            return;
+            }
+        }
+    }
+     console.log("Before formatting: " + input.expr);
+    // replace AND, OR, and NOT with symbols
+    input.expr = formatExpr(input);
+    console.log("Formatted: " + input.expr);
+    // remove spaces
+    input.expr = input.expr.replace(/\s/g, "");
+     console.log("Spaces removed: " + input.expr);
+	input.expr = processBool(input.expr);
     
-    //clear input textbook
-    //textbox.value = "";
-
+	output.innerHTML += "Exp: " + input.expr + "<br>";
+	
+    //clear input textbox
+    textbox.value = "";
+    
 }
 
 function checkValidity(input){
@@ -135,39 +121,39 @@ function checkValidity(input){
 }
 
 function formatExpr(input){
-	var input1 = input.expr;
 	input.expr = input.expr.replace("AND","&");
+	input.expr = input.expr.replace("*","&");
 	input.expr = input.expr.replace("OR","|");
+	input.expr = input.expr.replace("+","|");
 	input.expr = input.expr.replace("NOT","~");
-	return;
+	input.expr = input.expr.replace("'","~");
+	return input.expr;
 }
 
-//TODO:: pass in eqn
 function processBool(exp){
-	var output = document.getElementById("output");
     var lowInd, highInd, simExp, len, modExp;
     //check without bracket analysis
     exp = detectSimp(exp);
     //detect indices of brackets
     var parseData = detectOrder(exp);
-	//count how many simplifications you will do (how many sets of brackets there are to process)
+    //count how many simplifications you will do (how many sets of brackets there are to process)
     var maxChecks = parseData.indexOp.length;
     var simplified = false;
     var ctr = 0;
     modExp = exp;
     
-	// if there are brackets, simplify contents within brackets
+    // if there are brackets, simplify contents within brackets
     while(!simplified && maxChecks > 0){
-		// working from most inward bracket outward (last bracket you find is the most inward)
+        // working from most inward bracket outward (last bracket you find is the most inward)
         lowInd = parseData.indexOp[maxChecks - 1 - ctr];
         highInd = parseData.indexCls[maxChecks - 1 - ctr];
-		// isolates content within brackets
+        // isolates content within brackets
         modExp = exp.slice(lowInd + 1, highInd);
         // simplify brackets contents
         simExp = detectSimp(modExp);
-		// check if it simplified (was there a change in length?)
+        // check if it simplified (was there a change in length?)
         len = modExp.length - simExp.length;
-		// if change occurred, update expression
+        // if change occurred, update expression
         if(len != 0) exp = exp.slice(0, lowInd) + simExp + exp.slice(highInd + 1);
         
         //update indices
@@ -180,9 +166,9 @@ function processBool(exp){
                     parseData.indexCls[i] -= (len + 2);
                 }
             } 
-
+            
         }
-		// check if brackets are simplified
+        // check if brackets are simplified
         ctr++;        
         if(ctr == maxChecks){
              simplified = true;
@@ -190,9 +176,8 @@ function processBool(exp){
     }
     //process equation one more time to catch stragglers
     exp = detectSimp(exp);
-    console.log("Exp:" + exp);
-	output.innerHTML += "Exp: " + exp + "<br>";
     //operation order of preference: () ~ > & ^ |
+    return exp;
 }
 
 
@@ -241,16 +226,16 @@ function idemTest(exp){
     var result, match;
     var exp2 = exp;
     while(match = str.exec(exp)){
-		// split at operand & compare both sides
+	    // split at operand & compare both sides
         result = match[1].split("|", 2);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
         }
-      
+        
     }
     //AND test (B&B=B) 
     while(match = str2.exec(exp)){
-		// split at operand & compare both sides
+	    // split at operand & compare both sides
         result = match[1].split("&", 2);
         if(result[0] == result[1]){
             exp2 = exp.replace(match[1], result[0]);
@@ -272,27 +257,27 @@ function detectOrder(exp){
     var bracket;
     for(var i = 0; i < exp.length; i++){
         ch = exp[i];
-		// add open bracket to stack
+        // add open bracket to stack
         if((ch == open) && (exp[i+1] != '1')){
             stack.push(openCnt);
             indexCls.push(1);
             indexOp.push(i);
             openCnt++;
-
+            
         }
-		// add closed bracket to stack
+        // add closed bracket to stack
         else if((ch == closed) && (exp[i-2] + exp[i-1] != '(1')){
             closedCnt++;
             bracket = stack.pop();
             indexCls[bracket] = i;
-
+            
         }
-
+        
     }
-	// return indices of closed and open brackets
+    // return indices of closed and open brackets
     var par = {'indexCls':indexCls, 'indexOp':indexOp};
     return par;
-
+    
 }
 
 //call from detectSimp?
@@ -326,12 +311,12 @@ function simplify(exp, code, oper){
 
             return newExp;
         case rules.INVOLUTION:
-			// future implementation
+            // future implementation
             break;
         case rules.COMPLEMENTS:
-			// future implementation
-           break;
+            // future implementation
+            break;
       default:
-           return exp;
+            return exp;
     }
 }
