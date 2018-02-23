@@ -1,0 +1,8 @@
+{
+  "expression": "AB|A",
+  "simp": {
+    "step1":"A(B|1)",
+    "step2": "1"
+  },
+  "result" : "1"
+}
