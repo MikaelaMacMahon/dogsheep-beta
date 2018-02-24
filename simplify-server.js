@@ -1,6 +1,5 @@
 //Rest-based server using Node.js and Express.js
 
-
 var http = require('http');
 var fs = require('fs');
 var express = require('express');
@@ -22,8 +21,16 @@ app.get('/api/boolean/simplify/result', (request, response) => {
     //read file to return result
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
-    if(err && err.code == "ENOENT"){
+    if(error && error.code == "ENOENT"){
         console.error("Invalid filename provided");
+        return;
+    }
+    try {
+        var prevExp = JSON.parse(data);
+        //return result of simplification
+    }catch (error) {
+        response.status(400).json({error: "Invalid service request" });
+        console.error("Invalid service requeust");
         return;
     }
     //read JSON data
@@ -39,8 +46,19 @@ app.get('/api/boolean/simplify/steps', (request, response) => {
     //read file to return steps
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
-    if(err && err.code == "ENOENT"){
+    if(error && error.code == "ENOENT"){
         console.error("Invalid filename provided");
+        return;
+    }
+    try {
+        var prevExp = JSON.parse(data);
+        //read steps, for expression
+        //ie var result = courses[exo] //first check if in file
+        //else call simplify functions
+        //ie if(result == undefined)
+    }catch (error) {
+        response.status(400).json({error: "Invalid service request" });
+        console.error("Invalid service requeust");
         return;
     }
    
@@ -58,8 +76,17 @@ app.post('/api/boolean/simplify', (request, response) => {
     //read file to return steps
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
-    if(err && err.code == "ENOENT"){
+    if(error && error.code == "ENOENT"){
         console.error("Invalid filename provided");
+        return;
+    }
+    try {
+        var prevExp = JSON.parse(data);
+        //store result if already processed in file, else process new
+        //process equation and add to file
+    }catch (error) {
+        response.status(400).json({error: "Invalid service request" });
+        console.error("Invalid service requeust");
         return;
     }
    
@@ -75,7 +102,7 @@ app.post('/api/boolean/simplify/steps', (request, response) => {
 //http server to handle simplification and respond to front end requests
 
 
-
+//simplify with get or post
 
 
 //two endpoints
