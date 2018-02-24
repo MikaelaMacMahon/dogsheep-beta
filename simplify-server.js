@@ -11,11 +11,23 @@ app.use(bodyParser.json());
 var server = app.listen(8080, function () {
     console.log("Server running on port 8080");
 });
-
+//consider post as posting an expression?
+//post creates resource on server
+//get returns data from server to client
 //TODO::do an intial get for the locations of the endpoints? - ie "/" location
 //TODO:: add self descriptive messages
-
+//TODO:: just return success status with post
 //handle get requests for/api/boolean/simplify/result path
+
+
+//POST:: Create a new entry in the collection where the ID is assigned automatically by the collection. ID created is usually included as part of the data returned by the operation
+/*id: A|B
+  result: 
+  steps:
+
+*/
+
+
 app.get('/api/boolean/simplify/result', (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/result)";
     //read file to return result
