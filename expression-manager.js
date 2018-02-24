@@ -77,6 +77,7 @@ function processInput(){
     var input = {expr:textbox.value, errorStatus:0, type:null};
 	var origInput = input.expr;
 	output.innerHTML = "";
+    testAPI();
     //check validity of expression
     checkValidity(input);
     if (input.errorStatus) {
@@ -109,6 +110,26 @@ function processInput(){
     textbox.value = "";
     
 }
+
+function testAPI(){
+//write then read from serevr
+    var nodeFetch = require('node-fetch');
+    //may have to rep as host IP address rather than "local" host
+    fetch('http://localhost:8080/api/boolean/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'};
+        body: '{}
+    })then(response => {
+        console.log("Response recieved");
+        console.log(response.json());
+    }).catch(err => {
+        console.error("Error in response");
+    });
+
+    return;
+
+}
+
 
 function checkValidity(input){
     //check if it's empty
