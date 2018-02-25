@@ -99,6 +99,7 @@ app.get('/api/boolean/simplify/:id/steps', (request, response) => {
 app.post('/api/boolean/simplify', (request, response) => {
     console.log("Post request recieved at '/api/boolean/simplify/");
     //read file to return steps
+    
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
     if(error && error.code == "ENOENT"){
@@ -106,8 +107,16 @@ app.post('/api/boolean/simplify', (request, response) => {
         return;
     }
     try {
-        var expDB = JSON.parse(data);
-        console.log("tezt");
+        var expDB;
+/*        if(fs.statSync("results.json").size == 0)
+        {
+            expDB = {}; 
+            console.log("PROBLEMS");
+
+        }
+        else{
+            expDB = JSON.parse(data);
+        }*/
         //retrieve body of request
         var newExp = request.body;
         console.log("test");
@@ -120,7 +129,7 @@ app.post('/api/boolean/simplify', (request, response) => {
         var simpResults = processBoolean(newExp);
         var textResults = JSON.stringify(simpResults);
         console.log("test3");
-//        expDB = Object.assign(expDB, simpResults); //add new expression entry FAILS HERE!!!!
+        expDB = Object.assign(expDB, {"Test" : "passed"}); //add new expression entry FAILS HERE!!!!
         //TODO:: FIX REQUEST FAILURE
         //do I write text resultsor entire data entry
         console.log("test6");
