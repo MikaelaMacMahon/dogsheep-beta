@@ -108,7 +108,7 @@ app.post('/api/boolean/simplify', (request, response) => {
     }
     try {
         var expDB;
-/*        if(fs.statSync("results.json").size == 0)
+        if(fs.statSync("results.json").size == 0)
         {
             expDB = {}; 
             console.log("PROBLEMS");
@@ -116,9 +116,10 @@ app.post('/api/boolean/simplify', (request, response) => {
         }
         else{
             expDB = JSON.parse(data);
-        }*/
+        }
         //retrieve body of request
         var newExp = request.body;
+        console.log(request.body);
         console.log("test");
         //check if already in DB
    /*     if(expDB.hasOwnProperty(newExp)){
@@ -127,9 +128,9 @@ app.post('/api/boolean/simplify', (request, response) => {
         }   */     
         //retrieve json simplification results
         var simpResults = processBoolean(newExp);
-        var textResults = JSON.stringify(simpResults);
         console.log("test3");
-        expDB = Object.assign(expDB, {"Test" : "passed"}); //add new expression entry FAILS HERE!!!!
+        expDB = Object.assign(expDB, newExp); //add new expression entry FAILS HERE!!!!
+        var textResults = JSON.stringify(expDB);
         //TODO:: FIX REQUEST FAILURE
         //do I write text resultsor entire data entry
         console.log("test6");

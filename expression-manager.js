@@ -115,15 +115,28 @@ function testAPI(){
     jQuery.ajax({
         type: 'POST',
         url: 'http://localhost:8080/api/boolean/simplify/',
-        async: true,
-        contentType: "text/plain", //content sent from cliet to server
-        dataType: "json",
-        data: 'ABA',
+        dataType: 'json',
+        contentType: "application/json", //content sent from cliet to server
+        data: JSON.stringify({"AB|A" : '{}'}),
         success: function(){
             console.log('Succesful request');
         },
         error: function(){
             console.log('Request failed');
+        }
+    });
+
+    jQuery.ajax({
+        type: 'GET',
+        url: 'http://localhost:8080/api/boolean/simplify/AB|A/',
+        dataType: 'json',
+        contentType: "application/json", //content sent from cliet to server
+        data: JSON.stringify({"id" : '{AB|A}'}),
+        success: function(){
+            console.log('Succesful get request');
+        },
+        error: function(){
+            console.log('Get request failed');
         }
     });
 
