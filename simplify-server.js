@@ -27,8 +27,7 @@ var server = app.listen(8080, function () {
 
 */
 
-
-app.get('/api/boolean/simplify/result', (request, response) => {
+app.get('/api/boolean/simplify/:id/result', (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/result)";
     //read file to return result
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
@@ -38,22 +37,28 @@ app.get('/api/boolean/simplify/result', (request, response) => {
         return;
     }
     try {
-        var prevExp = JSON.parse(data);
+        var expDB = JSON.parse(data);
+        var expResult = expDB[request.params.id].result; //grab result of simplification
+        if(expResult == undefined) //check if incorrectly called
+        {
+            console.error("Expression simplify result is undefined");
+            response.status(400).json({error: "Invalid result request"});
+            return;
+        }
+        response.writeHead(200, {"Content-Type": "application/json"});
+        response.end(JSON.stringify(expResult));
         //return result of simplification
-    }catch (error) {
-        response.status(400).json({error: "Invalid service request" });
-        console.error("Invalid service requeust");
+    } catch (error) {
+        response.status(400).json({error: "Invalid result request" });
+        console.error("Simplified expresion request invalid");
         return;
     }
-    //read JSON data
-    
    
-    //TODO::format response (status, content, headers)
 });
 
 //return JSON object containing all of the steps
 //handle get requests for/api/boolean/simplify/steps path
-app.get('/api/boolean/simplify/steps', (request, response) => {
+app.get('/api/boolean/simplify/:id/steps', (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/steps");
     //read file to return steps
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
@@ -63,26 +68,28 @@ app.get('/api/boolean/simplify/steps', (request, response) => {
         return;
     }
     try {
-        var prevExp = JSON.parse(data);
-        //read steps, for expression
-        //ie var result = courses[exo] //first check if in file
-        //else call simplify functions
-        //ie if(result == undefined)
-    }catch (error) {
-        response.status(400).json({error: "Invalid service request" });
-        console.error("Invalid service requeust");
+        var expDB = JSON.parse(data);
+        var expSteps = expDB[request.params.id].steps; //grab steps of simplification
+        if(expSteps == undefined) //check if incorrectly called
+        {
+            console.error("Expression simplify steps are undefined");
+            response.status(400).json({error: "Invalid steps request"});
+            return;
+        }
+        response.writeHead(200, {"Content-Type": "application/json"});
+        response.end(JSON.stringify(expSteps));
+        //return result of simplification
+    } catch (error) {
+        response.status(400).json({error: "Invalid steps request" });
+        console.error("Simplified expresion steps request invalid");
         return;
     }
    
-    //format response (status, content, headers)
 });
 
 //TODO:: check for expression match to previous - maybe step 1 or seperate endpoint
 //return result of previously computed expression
 
-//post new expression
-//update JSON file with steps and result
-//clear after each time?
 app.post('/api/boolean/simplify', (request, response) => {
     console.log("Post request recieved at '/api/boolean/simplify/");
     //read file to return steps
@@ -93,9 +100,19 @@ app.post('/api/boolean/simplify', (request, response) => {
         return;
     }
     try {
-        var prevExp = JSON.parse(data);
-        //store result if already processed in file, else process new
-        //process equation and add to file
+        var expDB = JSON.parse(data);
+        //retrieve body of request
+        var newExp = request.body;
+        //check if already in DB
+        if(expDB.hasOwnProperty(newExp){
+            response.end(JSON.stringify(expDB[newExp]));
+            return;
+        }        
+        //retrieve json simplification results
+        var simpResults = processBoolean(newExp);
+        expDB = Object.assign(expDB, simpResults); //add new expression entry
+        response.end(JSON.stringify(simpResults));
+
     }catch (error) {
         response.status(400).json({error: "Invalid service request" });
         console.error("Invalid service requeust");
@@ -105,17 +122,7 @@ app.post('/api/boolean/simplify', (request, response) => {
 });
 
 
-app.post('/api/boolean/simplify/steps', (request, response) => {
-    console.log("Post request recieved at '/api/boolean/simplify/steps");
-
-});
-//post to recieve data from client (ie expression)
-
-//http server to handle simplification and respond to front end requests
-
-
-//simplify with get or post
-
-
-//two endpoints
-//write results to a file for easy recollection
+function processBoolean(exp){
+    var jsonResult = '{ "TEST" : "5", "Result" : "6", "Steps" : { "step1" : "4", "step2" : "3", "step3" : "7" }}';
+    return jsonResult;
+}
