@@ -1,13 +1,19 @@
 //Rest-based server using Node.js and Express.js
 
+
 var http = require('http');
 var fs = require('fs');
 var express = require('express');
-var bodyParser = require('body-parser);
+var bodyParser = require('body-parser');
 var app = express();
-
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+//TODO:: add get for first page
 app.use(bodyParser.json());
-
+//TODO:: XML parsing error - not well formed (symbol, request, response) slahses?
 var server = app.listen(8080, function () {
     console.log("Server running on port 8080");
 });
@@ -26,9 +32,9 @@ var server = app.listen(8080, function () {
   steps:
 
 */
-
+//TODO:: FIGURE OUT IDS
 app.get('/api/boolean/simplify/:id/result', (request, response) => {
-    console.log("GET request recieved at /api/boolean/simplify/result)";
+    console.log("GET request recieved at /api/boolean/simplify/result");
     //read file to return result
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
@@ -53,7 +59,7 @@ app.get('/api/boolean/simplify/:id/result', (request, response) => {
         console.error("Simplified expresion request invalid");
         return;
     }
-   
+  });
 });
 
 //return JSON object containing all of the steps
@@ -84,7 +90,7 @@ app.get('/api/boolean/simplify/:id/steps', (request, response) => {
         console.error("Simplified expresion steps request invalid");
         return;
     }
-   
+   });
 });
 
 //TODO:: check for expression match to previous - maybe step 1 or seperate endpoint
@@ -101,28 +107,38 @@ app.post('/api/boolean/simplify', (request, response) => {
     }
     try {
         var expDB = JSON.parse(data);
+        console.log("tezt");
         //retrieve body of request
         var newExp = request.body;
+        console.log("test");
         //check if already in DB
-        if(expDB.hasOwnProperty(newExp){
+   /*     if(expDB.hasOwnProperty(newExp)){
             response.end(JSON.stringify(expDB[newExp]));
             return;
-        }        
+        }   */     
         //retrieve json simplification results
         var simpResults = processBoolean(newExp);
-        expDB = Object.assign(expDB, simpResults); //add new expression entry
-        response.end(JSON.stringify(simpResults));
-
+        var textResults = JSON.stringify(simpResults);
+        console.log("test3");
+//        expDB = Object.assign(expDB, simpResults); //add new expression entry FAILS HERE!!!!
+        //TODO:: FIX REQUEST FAILURE
+        //do I write text resultsor entire data entry
+        console.log("test6");
+        fs.writeFileSync(__dirname + "/" + "results.json", textResults);  
+        console.log("test5");
+        response.end(textResults);
+//        response.end();
+         
     }catch (error) {
         response.status(400).json({error: "Invalid service request" });
         console.error("Invalid service requeust");
         return;
     }
-   
-});
-
+ });  
+})
 
 function processBoolean(exp){
+    //TODO:: WHY IS IT ENTERING SLASHES
     var jsonResult = '{ "TEST" : "5", "Result" : "6", "Steps" : { "step1" : "4", "step2" : "3", "step3" : "7" }}';
     return jsonResult;
 }

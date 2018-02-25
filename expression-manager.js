@@ -116,19 +116,21 @@ function processInput(){
 }
 
 function testAPI(){
-//write then read from serevr
-    var nodeFetch = require('node-fetch');
-    //may have to rep as host IP address rather than "local" host
-    fetch('http://localhost:8080/api/boolean/', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'};
-        body: '{}
-    })then(response => {
-        console.log("Response recieved");
-        console.log(response.json());
-    }).catch(err => {
-        console.error("Error in response");
+    jQuery.ajax({
+        type: 'POST',
+        url: 'http://localhost:8080/api/boolean/simplify',
+        async: true,
+        contentType: "text/plain", //content sent from cliet to server
+        dataType: "json",
+        data: JSON.stringify('AB|AA'),
+        success: function(){
+            console.log('Succesful request');
+        },
+        error: function(){
+            console.log('Request failed');
+        }
     });
+
 
     return;
 
