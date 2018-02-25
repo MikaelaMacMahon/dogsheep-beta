@@ -118,11 +118,11 @@ function processInput(){
 function testAPI(){
     jQuery.ajax({
         type: 'POST',
-        url: 'http://localhost:8080/api/boolean/simplify',
+        url: 'http://localhost:8080/api/boolean/simplify/',
         async: true,
         contentType: "text/plain", //content sent from cliet to server
         dataType: "json",
-        data: JSON.stringify('AB|AA'),
+        data: 'ABA',
         success: function(){
             console.log('Succesful request');
         },
