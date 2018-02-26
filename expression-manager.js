@@ -132,7 +132,7 @@ function testAPI(){
 
     jQuery.ajax({
         type: 'GET',
-        url: 'http://localhost:8080/api/boolean/simplify/AB|A/',
+        url: 'http://localhost:8080/api/boolean/simplify/AB|A/result/',
         dataType: 'json',
         contentType: "application/json", //content sent from cliet to server
         data: JSON.stringify({"id" : '{AB|A}'}),
