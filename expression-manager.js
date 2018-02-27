@@ -446,7 +446,9 @@ function detectSimp(exp){
 		console.log("10");
 		exp2 = simplify(exp2, rules.COMBINING, op.AND);
 	}
-    //idempotency test 
+    //idempotency test
+    console.log("Entering idempotency"); 
+    console.log("ExP" + exp2);
     exp2 = idemTest(exp2);
     
     return exp2;
@@ -519,19 +521,20 @@ function trappedInBrackets(expression, str1, str2){
 function idemTest(exp){
     //OR test (A|A=A)
 	//anything that isn't a non-letter symbol
-    var str = /([^\(|\)|\&|\||0|1]*\|[^\(|\)|\&|\||\^|0|1]*)/g;
+    var str = /(([A-Z]|[a-z])*\|([A-Z]|[a-z])*)/g;
     var str2 = /([^\(|\)|\&|\||0|1]*\&[^\(|\)|\&|\||\^|0|1]*)/g;
     var result, match;
     var exp2 = exp;
 	console.log("beginning of idemtest: " + exp2);
-    while(match = str.exec(exp)){
+    while((match = str.exec(exp)) != null){
 	    // split at operand & compare both sides
 		console.log("match[1]: " + match[1]);
         result = match[1].split("|", 2);
 		console.log("result: " + result);
 		console.log("result[0]: " + result[0]);
-		console.log("result[1]: " + result[1]);
-        if(result[0] == result[1]){
+	    if(result[0] ==0 || result[0] == null) console.log("IS NULL");
+    	console.log("result[1]: " + result[1]);
+        if((result[0] == result[1]) && (result[0] != 0) && (result[0] != null)){
 			console.log("exp2 before replace: " + exp2);
 			console.log("match[1]: " + match[1]);
 			console.log("result[0]: " + result[0]);
