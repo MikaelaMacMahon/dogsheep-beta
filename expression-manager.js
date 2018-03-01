@@ -28,10 +28,6 @@ var keys = ["addVar", "&", "|", "clear", "back",
             "9", ","];
 
 var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
-//define simplification rules
-var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "COMPLEMENTS":4, "DISTRIBUTIVITY":5, "COVERING":6, "COMBINING":7};
-
-var op = {"NULL":0, "AND": 1, "OR":2};
 
 function inputChar(keyIn) {
     var textbox = document.getElementById("expr");
@@ -107,25 +103,19 @@ function processInput(){
 	output.innerHTML += "Initial input: " + origInput + "<br>";
     output.innerHTML += "Formatted: " + input.expr + "<br>";
 
-        //ENTER SERVER HERE
-        processBoolean(input.expr);
-
-//	output.innerHTML += "Result: " + result + "<br>";
-//	output.innerHTML += "Steps: " + steps + "<br>";
+    //process boolean expression
+    processBoolean(input.expr, output);
     //clear input textbox
     textbox.value = "";
     
 }
 
 //post boolean expression to server
-function processBoolean(expr)
+function processBoolean(expr, output)
 {
-   var result, steps;
    var input = {};
    input[expr] = {};
    
-   console.log(input); 
-
    jQuery.ajax({
         type: 'POST',
         url: 'http://localhost:8080/api/boolean/simplify/',
@@ -133,59 +123,64 @@ function processBoolean(expr)
         contentType: "application/json", //content sent from cliet to server
         data: JSON.stringify(input),
         success: function(){
-            console.log('Succesful request');
-            result = getResult(expr);
-            steps = getSteps(expr);
-            //TODO::output both to screen
-	    //TODO:: determine steps
+            console.log('Succesful post request');
+            getSteps(expr, output);
+            getResult(expr, output);
         },
         error: function(){
-            console.log('Request failed');
+            console.log('Post request failed');
         }
     });
 }
 
 //retrieve result from server
-function getResult(expr){
+function getResult(expr, output){
     var result;
-    //TODO:: ERROR CHECK    
 
     jQuery.ajax({
         type: 'GET',
         url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/result/',
         dataType: 'json',
-        contentType: "application/json", //content sent from cliet to server
-        success: function(){
-            console.log('Succesful get request');
+        contentType: "application/json", //content sent from client to server
+        success: function(res){
+            console.log('Succesful get results request');
             //read result
+            result = "Result: " + res;
+            output.innerHTML += result;
         },
         error: function(){
             console.log('Get request failed');
+            result = "Result: " + expr;
+            output.innerHTML += result;
         }
     });
-
-    return result;
 }
 
-function getSteps(expr){
+function getSteps(expr, output){
     var steps;
-    //TODO:: ERROR CHECK    
+    
     jQuery.ajax({
         type: 'GET',
         url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/steps/',
         dataType: 'json',
-        contentType: "application/json", //content sent from cliet to server
-        success: function(){
-            console.log('Succesful get request');
+        contentType: "application/json", //content sent from client to server
+        success: function(res){
+            console.log('Succesful get steps request');
+            console.log(res);
             //read steps
+            steps = JSON.stringify(res);
+            steps = steps.replace(/(\}|\{|\")/gi, "");
+            steps = steps.replace(/(\_)/gi, " ");
+            steps = steps.replace(/(\:)/gi, ": ");
+            steps = steps.replace(/(\,)/gi, "<br>");
+            //output steps
+            console.log(steps);
+            output.innerHTML += steps + "<br>";
         },
         error: function(){
             console.log('Get request failed');
         }
     });
-
-    return steps;
-
 }
 
 

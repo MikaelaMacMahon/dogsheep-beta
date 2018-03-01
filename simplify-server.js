@@ -40,7 +40,7 @@ var op = {"NULL":0, "AND": 1, "OR":2};
 */
 //TODO:: FIGURE OUT IDS
 app.get('/api/boolean/simplify/:id/result', (request, response) => {
-    console.log("GET request recieved at /api/boolean/simplify/"  + request.params.id + "result");
+    console.log("GET request recieved at /api/boolean/simplify/"  + request.params.id + "/result");
     //read file to return result
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
@@ -50,7 +50,7 @@ app.get('/api/boolean/simplify/:id/result', (request, response) => {
     }
     try {
         var expDB = JSON.parse(data);
-        var expResult = expDB[request.params.id].result; //grab result of simplification
+        var expResult = expDB[request.params.id].Result; //grab result of simplification
         if(expResult == undefined) //check if incorrectly called
         {
             console.error("Expression simplify result is undefined");
@@ -71,7 +71,7 @@ app.get('/api/boolean/simplify/:id/result', (request, response) => {
 //return JSON object containing all of the steps
 //handle get requests for/api/boolean/simplify/steps path
 app.get('/api/boolean/simplify/:id/steps', (request, response) => {
-    console.log("GET request recieved at /api/boolean/simplify/steps");
+    console.log("GET request recieved at /api/boolean/simplify/" + request.params.id + "/steps");
     //read file to return steps
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
@@ -81,7 +81,7 @@ app.get('/api/boolean/simplify/:id/steps', (request, response) => {
     }
     try {
         var expDB = JSON.parse(data);
-        var expSteps = expDB[request.params.id].steps; //grab steps of simplification
+        var expSteps = expDB[request.params.id].Steps; //grab steps of simplification
         if(expSteps == undefined) //check if incorrectly called
         {
             console.error("Expression simplify steps are undefined");
@@ -156,13 +156,13 @@ function processBoolean(exp){
     var output = {};
     var origExp = exp;
     output[origExp] = {};
-    output[origExp]["steps"] = {};
+    output[origExp]["Steps"] = {};
     //var output = document.getElementById("output");
     var lowInd, highInd, simExp, len, modExp;
     //check without bracket analysis
     exp = detectSimp(exp);
     console.log(output);
-    output[origExp]["steps"]["step_1"] = exp;
+    output[origExp]["Steps"]["Step_1"] = exp;
     console.log(output);
     //detect indices of brackets
     var parseData = detectOrder(exp);
@@ -204,15 +204,15 @@ function processBoolean(exp){
              simplified = true;
         }
         //Display number of steps depending on number of brackets
-        stepStr = "steps_" + (ctr + 1);
-        output[origExp].steps[stepStr] = exp;
+        stepStr = "Step_" + (ctr + 1);
+        output[origExp].Steps[stepStr] = exp;
     }
     //process equation one more time to catch stragglers
     console.log(output);
     exp = detectSimp(exp);
     console.log("assi");
     console.log(output);
-    output[origExp]["result"] = exp;
+    output[origExp]["Result"] = exp;
     console.log(output);
     return output;
 }
