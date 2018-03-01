@@ -1,1 +1,1 @@
-{"H&H":{},"B&B":{},"A|A&B&(A|C)":{},"T&E&S&T":{},"T&E&S":{},"T":{},"A&B":{}}
+{"H&H":{"steps":{"test":"test"},"result":"H"},"B&B":{},"A|A&B&(A|C)":{},"T&E&S&T":{},"T&E&S":{},"T":{},"A&B":{},"L&K":{"steps":"test","result":"L&K"},"D":{"steps":"test","result":"D"},"A&A":{"steps":{"step_1":"A"},"result":"A"}}

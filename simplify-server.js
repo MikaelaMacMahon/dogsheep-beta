@@ -136,15 +136,11 @@ app.post('/api/boolean/simplify', (request, response) => {
         //retrieve json simplification results
         console.log(Object.keys(newExp)[0]);
         var simpResults = processBoolean(Object.keys(newExp)[0]);
-        console.log("test3");
-        console.log(simpResults);
-        expDB = Object.assign(expDB, newExp); //add new expression entry FAILS HERE!!!!
+        console.log("test 1");
+        expDB = Object.assign(expDB, simpResults); //add new expression entry FAILS HERE!!!!
+        console.log("test2");
         var textResults = JSON.stringify(expDB);
-        //TODO:: FIX REQUEST FAILURE
-        //do I write text resultsor entire data entry
-        console.log("test6");
         fs.writeFileSync(__dirname + "/" + "results.json", textResults);  
-        console.log("test5");
         response.end(textResults);
 //        response.end();
          
@@ -158,14 +154,16 @@ app.post('/api/boolean/simplify', (request, response) => {
 
 function processBoolean(exp){
     var output = {};
-    output[exp] = {};
-    output[exp]["steps"] = {};
+    var origExp = exp;
+    output[origExp] = {};
+    output[origExp]["steps"] = {};
     //var output = document.getElementById("output");
     var lowInd, highInd, simExp, len, modExp;
     //check without bracket analysis
     exp = detectSimp(exp);
-    console.log("do I make i out");
-    output[exp].steps["step_1"] = exp;
+    console.log(output);
+    output[origExp]["steps"]["step_1"] = exp;
+    console.log(output);
     //detect indices of brackets
     var parseData = detectOrder(exp);
     //count how many simplifications you will do (how many sets of brackets there are to process)
@@ -206,19 +204,17 @@ function processBoolean(exp){
              simplified = true;
         }
         //Display number of steps depending on number of brackets
-        stepStr = "step " + ctr;
-        console.log("AM I HERE");
-        output[exp]["steps"][stepStr] = exp;
-        console.log("AM I HERE2");
-                //TODO:: OUTPUT STEPS HERE
-		//output.innerHTML += "Step " + ctr + ": " + exp + "<br>";
+        stepStr = "steps_" + (ctr + 1);
+        output[origExp].steps[stepStr] = exp;
     }
     //process equation one more time to catch stragglers
-    exp = detectSimp(exp);
-    output[exp]["result"] = exp;
     console.log(output);
-    //operation order of preference: () ~ > & ^ |
-    return exp;
+    exp = detectSimp(exp);
+    console.log("assi");
+    console.log(output);
+    output[origExp]["result"] = exp;
+    console.log(output);
+    return output;
 }
 
 function detectSimp(exp){
