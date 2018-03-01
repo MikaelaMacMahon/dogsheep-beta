@@ -77,7 +77,7 @@ function processInput(){
     var input = {expr:textbox.value, exprArr:[], errorStatus:0, type:null};
 	var origInput = input.expr;
 	output.innerHTML = "";
-    testAPI();
+
     //check validity of expression
     checkValidity(input);
     if (input.errorStatus) {
@@ -108,11 +108,10 @@ function processInput(){
     output.innerHTML += "Formatted: " + input.expr + "<br>";
 
         //ENTER SERVER HERE
-        procesBoolean(input.expr);
-	var result = getResult(input.expr);
-        var steps = getSteps(input.expr);
-	output.innerHTML += "Result: " + result + "<br>";
-	output.innerHTML += "Steps: " + steps + "<br>";
+        processBoolean(input.expr);
+
+//	output.innerHTML += "Result: " + result + "<br>";
+//	output.innerHTML += "Steps: " + steps + "<br>";
     //clear input textbox
     textbox.value = "";
     
@@ -121,14 +120,24 @@ function processInput(){
 //post boolean expression to server
 function processBoolean(expr)
 {
+   var result, steps;
+   var input = {};
+   input[expr] = {};
+   
+   console.log(input); 
+
    jQuery.ajax({
         type: 'POST',
         url: 'http://localhost:8080/api/boolean/simplify/',
         dataType: 'json',
         contentType: "application/json", //content sent from cliet to server
-        data: JSON.stringify({expr : '{}'}),
+        data: JSON.stringify(input),
         success: function(){
             console.log('Succesful request');
+            result = getResult(expr);
+            steps = getSteps(expr);
+            //TODO::output both to screen
+	    //TODO:: determine steps
         },
         error: function(){
             console.log('Request failed');
@@ -139,13 +148,13 @@ function processBoolean(expr)
 //retrieve result from server
 function getResult(expr){
     var result;
+    //TODO:: ERROR CHECK    
 
     jQuery.ajax({
         type: 'GET',
         url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/result/',
         dataType: 'json',
         contentType: "application/json", //content sent from cliet to server
-        data: JSON.stringify({"id" : expr}),
         success: function(){
             console.log('Succesful get request');
             //read result
@@ -160,13 +169,12 @@ function getResult(expr){
 
 function getSteps(expr){
     var steps;
-    
+    //TODO:: ERROR CHECK    
     jQuery.ajax({
         type: 'GET',
-        url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/result/',
+        url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/steps/',
         dataType: 'json',
         contentType: "application/json", //content sent from cliet to server
-        data: JSON.stringify({"id" : expr}),
         success: function(){
             console.log('Succesful get request');
             //read steps

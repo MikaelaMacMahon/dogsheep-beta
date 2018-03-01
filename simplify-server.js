@@ -18,6 +18,11 @@ app.use(bodyParser.json());
 var server = app.listen(8080, function () {
     console.log("Server running on port 8080");
 });
+
+var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "COMPLEMENTS":4, "DISTRIBUTIVITY":5, "COVERING":6, "COMBINING":7};
+
+var op = {"NULL":0, "AND": 1, "OR":2};
+
 //consider post as posting an expression?
 //post creates resource on server
 //get returns data from server to client
@@ -35,7 +40,7 @@ var server = app.listen(8080, function () {
 */
 //TODO:: FIGURE OUT IDS
 app.get('/api/boolean/simplify/:id/result', (request, response) => {
-    console.log("GET request recieved at /api/boolean/simplify/result");
+    console.log("GET request recieved at /api/boolean/simplify/"  + request.params.id + "result");
     //read file to return result
     fs.readFile(__dirname + "/" + "results.json", 'utf8',
     function (error, data) {
@@ -129,9 +134,10 @@ app.post('/api/boolean/simplify', (request, response) => {
             return;
         }     
         //retrieve json simplification results
-        var simpResults = processBoolean(newExp);
+        console.log(Object.keys(newExp)[0]);
+        var simpResults = processBoolean(Object.keys(newExp)[0]);
         console.log("test3");
-	console.log(simpResults);
+        console.log(simpResults);
         expDB = Object.assign(expDB, newExp); //add new expression entry FAILS HERE!!!!
         var textResults = JSON.stringify(expDB);
         //TODO:: FIX REQUEST FAILURE
@@ -144,17 +150,22 @@ app.post('/api/boolean/simplify', (request, response) => {
          
     }catch (error) {
         response.status(400).json({error: "Invalid service request" });
-        console.error("Invalid service requeust");
+        console.error("Invalid service request");
         return;
     }
  });  
 })
 
-function processBool(exp){
-    var output = document.getElementById("output");
-	var lowInd, highInd, simExp, len, modExp;
+function processBoolean(exp){
+    var output = {};
+    output[exp] = {};
+    output[exp]["steps"] = {};
+    //var output = document.getElementById("output");
+    var lowInd, highInd, simExp, len, modExp;
     //check without bracket analysis
     exp = detectSimp(exp);
+    console.log("do I make i out");
+    output[exp].steps["step_1"] = exp;
     //detect indices of brackets
     var parseData = detectOrder(exp);
     //count how many simplifications you will do (how many sets of brackets there are to process)
@@ -162,7 +173,7 @@ function processBool(exp){
     var simplified = false;
     var ctr = 0;
     modExp = exp;
-    
+    var stepStr;
     // if there are brackets, simplify contents within brackets
     while(!simplified && maxChecks > 0){
        // working from most inward bracket outward (last bracket you find is the most inward)
@@ -194,10 +205,18 @@ function processBool(exp){
         if(ctr == maxChecks){
              simplified = true;
         }
-		output.innerHTML += "Step " + ctr + ": " + exp + "<br>";
+        //Display number of steps depending on number of brackets
+        stepStr = "step " + ctr;
+        console.log("AM I HERE");
+        output[exp]["steps"][stepStr] = exp;
+        console.log("AM I HERE2");
+                //TODO:: OUTPUT STEPS HERE
+		//output.innerHTML += "Step " + ctr + ": " + exp + "<br>";
     }
     //process equation one more time to catch stragglers
     exp = detectSimp(exp);
+    output[exp]["result"] = exp;
+    console.log(output);
     //operation order of preference: () ~ > & ^ |
     return exp;
 }
