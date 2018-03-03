@@ -93,7 +93,6 @@ function processInput(){
     console.log("Before formatting: " + input.expr);
 	// remove spaces
     input.expr = input.expr.replace(/\s/g, "");
-     console.log("Spaces removed: " + input.expr);
     // replace AND, OR, and NOT with symbols
     formatExpr(input);
 	if (input.errorStatus == 3) {
@@ -166,7 +165,6 @@ function getSteps(expr, output){
         contentType: "application/json", //content sent from client to server
         success: function(res){
             console.log('Succesful get steps request');
-            console.log(res);
             //read steps
             steps = JSON.stringify(res);
             steps = steps.replace(/(\}|\{|\")/gi, "");
@@ -198,19 +196,15 @@ function checkValidity(input){
 }
 
 function formatExpr(input){
-	console.log("formatting");
 	for (var i = 0; i < alphabet.length; i++) {
 		input.expr = input.expr.split(alphabet[i].toLowerCase()).join(alphabet[i]);
 	}
-	console.log(input.expr);
-	console.log("after uppercase: " + input.expr);
 	input.expr = input.expr.replace(/AND/g,"&");
 	input.expr = input.expr.replace(/\*/g,"&");
 	input.expr = input.expr.replace(/OR/g,"|");
 	input.expr = input.expr.replace(/\+/g,"|");
 	input.expr = input.expr.replace(/NOT/g,"~");
 	insertAnds(input);
-	console.log(input.expr);
 	removeDoubleNegatives(input);
 	apostrophesToTildes(input);
 	return input.expr;

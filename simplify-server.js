@@ -12,9 +12,7 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
     next();
 });
-//TODO:: add get for first page
 app.use(bodyParser.json());
-//TODO:: XML parsing error - not well formed (symbol, request, response) slahses?
 var server = app.listen(8080, function () {
     console.log("Server running on port 8080");
 });
@@ -23,22 +21,6 @@ var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "COMPLEM
 
 var op = {"NULL":0, "AND": 1, "OR":2};
 
-//consider post as posting an expression?
-//post creates resource on server
-//get returns data from server to client
-//TODO::do an intial get for the locations of the endpoints? - ie "/" location
-//TODO:: add self descriptive messages
-//TODO:: just return success status with post
-//handle get requests for/api/boolean/simplify/result path
-
-
-//POST:: Create a new entry in the collection where the ID is assigned automatically by the collection. ID created is usually included as part of the data returned by the operation
-/*id: A|B
-  result: 
-  steps:
-
-*/
-//TODO:: FIGURE OUT IDS
 app.get('/api/boolean/simplify/:id/result', (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/"  + request.params.id + "/result");
     //read file to return result
@@ -99,9 +81,6 @@ app.get('/api/boolean/simplify/:id/steps', (request, response) => {
    });
 });
 
-//TODO:: check for expression match to previous - maybe step 1 or seperate endpoint
-//return result of previously computed expression
-
 app.post('/api/boolean/simplify', (request, response) => {
     console.log("Post request recieved at '/api/boolean/simplify/");
     //read file to return steps
@@ -124,8 +103,6 @@ app.post('/api/boolean/simplify', (request, response) => {
         }
         //retrieve body of request
         var newExp = request.body;
-        console.log(request.body);
-        console.log("test");
         //check if already in DB
         if(expDB.hasOwnProperty(newExp)){
             response.end(JSON.stringify(expDB[newExp]));
@@ -134,11 +111,8 @@ app.post('/api/boolean/simplify', (request, response) => {
             return;
         }     
         //retrieve json simplification results
-        console.log(Object.keys(newExp)[0]);
         var simpResults = processBoolean(Object.keys(newExp)[0]);
-        console.log("test 1");
         expDB = Object.assign(expDB, simpResults); //add new expression entry FAILS HERE!!!!
-        console.log("test2");
         var textResults = JSON.stringify(expDB);
         fs.writeFileSync(__dirname + "/" + "results.json", textResults);  
         response.end(textResults);
@@ -161,7 +135,6 @@ function processBoolean(exp){
     var lowInd, highInd, simExp, len, modExp;
     //check without bracket analysis
     exp = detectSimp(exp);
-    console.log(output);
     output[origExp]["Steps"]["Step_1"] = exp;
     console.log(output);
     //detect indices of brackets
@@ -208,12 +181,8 @@ function processBoolean(exp){
         output[origExp].Steps[stepStr] = exp;
     }
     //process equation one more time to catch stragglers
-    console.log(output);
     exp = detectSimp(exp);
-    console.log("assi");
-    console.log(output);
     output[origExp]["Result"] = exp;
-    console.log(output);
     return output;
 }
 
@@ -378,8 +347,6 @@ function detectSimp(exp){
 		exp2 = simplify(exp2, rules.COMBINING, op.AND);
 	}
     //idempotency test
-    console.log("Entering idempotency"); 
-    console.log("ExP" + exp2);
     exp2 = idemTest(exp2);
     
     return exp2;
@@ -392,9 +359,6 @@ function placeAtEnd(expression, var1, var2) {
 	generalMatch1 = new RegExp("(" + var1 + ")" + ".*" + "(" + var2 + ")");	
 	generalMatch2 = new RegExp("(" + var2 + ")" + ".*" + "(" + var1 + ")");
 
-	console.log("new var1: " + var1);
-	console.log("new var2: " + var2);
-	
 	if (generalMatch1.test(expression)) {
 		fullVar1 = new RegExp("((\\||^)" + "(" + var1 + ")" + "(\\||$))");
 		fullVar2 = new RegExp("((\\||^)" + "(" + var2 + ")" + "(\\||$))");
@@ -459,21 +423,11 @@ function idemTest(exp){
 	console.log("beginning of idemtest: " + exp2);
     while((match = str.exec(exp)) != null){
 	    // split at operand & compare both sides
-		console.log("match[1]: " + match[1]);
         result = match[1].split("|", 2);
-		console.log("result: " + result);
-		console.log("result[0]: " + result[0]);
-	    if(result[0] ==0 || result[0] == null) console.log("IS NULL");
-    	console.log("result[1]: " + result[1]);
         if((result[0] == result[1]) && (result[0] != 0) && (result[0] != null)){
-			console.log("exp2 before replace: " + exp2);
-			console.log("match[1]: " + match[1]);
-			console.log("result[0]: " + result[0]);
             exp2 = exp.replace(match[1], result[0]);
-			console.log("exp2: " + exp2);
         }
     }
-	console.log("after or: " + exp2);
     //AND test (A&A=A) 
     while(match = str2.exec(exp)){
 	    // split at operand & compare both sides
@@ -482,7 +436,6 @@ function idemTest(exp){
             exp2 = exp.replace(match[1], result[0]);
         }
     } 
-	console.log("after and: " + exp2);
    return exp2;
 }
 
