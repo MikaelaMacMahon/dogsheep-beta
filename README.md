@@ -8,12 +8,17 @@ DogSheep Beta is an adaption of "Wolfram Alpha" currently designed to accept Boo
 Equations are processed according to the order of operations, where the most internal parentheses group is processed first, before working outwards. Several simplification rules are then iteratively applied to these subsections, to produce a simplified expression. Once simplified, the modified expressed is then displayed to the user for review. 
 
 ### How to Use:
-1. Open page.html in a web browser
-2. Deploy the server
+1. Install dependencies
+```
+npm install express
+npm install body-parser
+```
+2. Open page.html in a web browser
+3. Deploy the server
 ```
 nodejs simplify-server.js
 ```
-3. Enter expression and retrieve simplified result (and intermediate steps)
+4. Enter expression and retrieve simplified result (and intermediate steps)
 
 ## Implementation
 
