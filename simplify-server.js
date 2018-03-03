@@ -352,20 +352,25 @@ function detectSimp(exp){
     return exp2;
 }
 	
-// this function rearranges all cases where not-a-number variables are separated with "or"
-function placeAtEnd(expression, var1, var2) {
+function placeAtEnd(expression, var1, var2, operation) {
 	var generalMatch1, generalMatch2, matchArray, fullVar1, fullVar2;
 	
+	// make a general match expression for the two variables, with or without something in between
 	generalMatch1 = new RegExp("(" + var1 + ")" + ".*" + "(" + var2 + ")");	
 	generalMatch2 = new RegExp("(" + var2 + ")" + ".*" + "(" + var1 + ")");
-
+	
+	// specify each variable
+		// it is a group
+		// it is preceded by either | or & (operation) OR start of string
+		// it is proceeded by either | or & (operation) OR end of string
+		
 	if (generalMatch1.test(expression)) {
-		fullVar1 = new RegExp("((\\||^)" + "(" + var1 + ")" + "(\\||$))");
-		fullVar2 = new RegExp("((\\||^)" + "(" + var2 + ")" + "(\\||$))");
+		fullVar1 = new RegExp("((" + operation + "|^)(" + var1.replace(/[\(\)\|\&]/g, "\\$&") + ")(" + operation + "|$))");
+		fullVar2 = new RegExp("((" + operation + "|^)(" + var2.replace(/[\(\)\|\&]/g, "\\$&") + ")(" + operation + "|$))");
 	}
 	else if (generalMatch2.test(expression)) {
-		fullVar1 = new RegExp("((\\||^)" + "(" + var2 + ")" + "(\\||$))");
-		fullVar2 = new RegExp("((\\||^)" + "(" + var1 + ")" + "(\\||$))");
+		fullVar1 = new RegExp("((" + operation + "|^)(" + var2.replace(/[\(\)\|\&]/g, "\\$&") + ")(" + operation + "|$))");
+		fullVar2 = new RegExp("((" + operation + "|^)(" + var1.replace(/[\(\)\|\&]/g, "\\$&") + ")(" + operation + "|$))");
 	}
 	else {
 		console.log("Called by mistake.");
@@ -373,40 +378,47 @@ function placeAtEnd(expression, var1, var2) {
 	}
 	
 	// replace var1 with nothing, replace var2 with nothing
-	console.log(fullVar1.exec(expression));
-	expression = expression.replace(fullVar1.exec(expression)[1], "");
-	console.log("after first replacement: " + expression);
-	console.log(fullVar2.exec(expression));
-	expression = expression.replace(fullVar2.exec(expression)[1], "");
-	console.log("after replacement: " + expression);
-	
-	// append var1 | var2 to the end of the expression
-	console.log("expression: " + expression);
-	if (expression === "") {
-		console.log("o no!");
-		expression = var1 + "|" + var2;
+	if (fullVar1.exec(expression)[2] === operation || fullVar1.exec(expression)[fullVar1.exec(expression).length] === operation) {
+		expression = expression.replace(fullVar1.exec(expression)[1], operation);
 	}
 	else {
-		expression = expression + "|" + var1 + "|" + var2;
+		expression = expression.replace(fullVar1.exec(expression)[1], "");
+	}
+	
+	if (fullVar2.exec(expression)[2] === operation || fullVar2.exec(expression)[fullVar2.exec(expression).length] === operation) {
+		expression = expression.replace(fullVar2.exec(expression)[1], operation);
+	}
+	else {
+		expression = expression.replace(fullVar2.exec(expression)[1], "");
+	}
+	
+	// append var1 | var2 to the end of the expression
+	if (expression === "") {
+		expression = var1 + operation.replace("\\", "") + var2;
+	}
+	else {
+		expression = expression + operation.replace("\\", "") + var1 + operation.replace("\\", "") + var2;
 	}
 	expression = expression.replace("()","");
-	console.log("expression: " + expression);
 	
 	return expression;
 }
 
 function trappedInBrackets(expression, str1, str2){
 	var i, bracketTracker = 0;
-	var lowerIndex = Math.min(expression.indexOf(str1), expression.indexOf(str2));
-	var higherIndex = Math.max(expression.indexOf(str1), expression.indexOf(str2));
-	for (i = lowerIndex; i < higherIndex; i++) {
+	var lowerIndex = Math.min(expression.indexOf(str1) + str1.length, expression.indexOf(str2));
+	var higherIndex = Math.max(expression.indexOf(str1) + str1.length, expression.indexOf(str2));
+
+	for (i = lowerIndex; i <= higherIndex; i++) {
+		if (i == expression.length)
+			break;
 		if (expression[i] === '(') {
 			bracketTracker++;
 		}
 		else if (expression[i] === ')') {
+			if (bracketTracker == 0) return 1;
 			bracketTracker--;
 		}
-		console.log(bracketTracker);
 	}
 	return bracketTracker;
 }
@@ -420,7 +432,6 @@ function idemTest(exp){
     var str2 = /([^\(|\)|\&|\||0|1]*\&[^\(|\)|\&|\||\^|0|1]*)/g;
     var result, match;
     var exp2 = exp;
-	console.log("beginning of idemtest: " + exp2);
     while((match = str.exec(exp)) != null){
 	    // split at operand & compare both sides
         result = match[1].split("|", 2);
@@ -432,7 +443,7 @@ function idemTest(exp){
     while(match = str2.exec(exp)){
 	    // split at operand & compare both sides
         result = match[1].split("&", 2);
-        if(result[0] == result[1]){
+        if((result[0] == result[1]) && (result[0] != 0) && (result[0] != null)){
             exp2 = exp.replace(match[1], result[0]);
         }
     } 
@@ -481,7 +492,7 @@ function simplify(exp, code, oper){
     switch(code){
         case rules.IDENTITY:
             //A|0 = A
-            if(oper = op.OR){
+            if(oper == op.OR){
                 str = /(\|0)|(0\|)/g;
             }
             //A&1 = A
@@ -508,18 +519,24 @@ function simplify(exp, code, oper){
             //A|~A = 1
             if(oper == op.OR) {
 				str = /([A-Z])\|\~\1/g;
-				newExp = exp.replace(str, "1");
-			}
-            //A&~A = 0
-            else if(oper == op.AND)
-                str = /([A-Z])\&\~\1/g;
 				newExp = exp.replace(str, "0");
+			}
+            //A&~A = 0 or ~A&A = 0
+            else if(oper == op.AND) {
+                str = /([A-Z])\&\~\1/g;
+				str2 = /\~([A-Z])\&\1/g;
+				if (str.test(exp)) {
+					newExp = exp.replace(str, "0");
+				}
+				else if (str2.test(exp)) {
+					newExp = exp.replace(str2, "0");
+				}
+			}
 			return newExp;
         case rules.DISTRIBUTIVITY:
 			//A|(B&C) = (A|B)&(A|C)
             if(oper == op.OR) {
 				str = /([A-Z])\|\(((?!\1)[A-Z])&((?!\1)(?!\2)[A-Z])\)/;
-				console.log(str.exec(exp));
                 newExp = exp.replace(str, "(" 
 				+ str.exec(exp)[1] + "|" 
 				+ str.exec(exp)[2] + ")" + "&" + "(" 
@@ -528,9 +545,7 @@ function simplify(exp, code, oper){
 			}
             //A&(B|C) = (A&B)|(A&C)
             else if(oper == op.AND) {
-				console.log(exp);
 				str = /([A-Z])\&\(((?!\1)[A-Z])\|((?!\1)(?!\2)[A-Z])\)/;
-				console.log(str.exec(exp));
                 newExp = exp.replace(str, "(" 
 				+ str.exec(exp)[1] + "&" 
 				+ str.exec(exp)[2] + ")" + "|" + "(" 
@@ -539,13 +554,24 @@ function simplify(exp, code, oper){
 			}
 			return newExp;
 		case rules.COVERING:
-			//A|(A&B) = A
-            if(oper == op.OR)
-				
-                newExp = exp[0];
+			//A|(A&B) = A; or A|(B&A) = A
+			str = /([A-Z])\|(\(\1\&((?!\1)[A-Z])\))/;
+			str2 = /([A-Z])\|(\(((?!\1)[A-Z])\&\1\))/;
+            if (str.test(exp))
+				newExp = exp.replace(str, str.exec(exp)[1]);
+			else if (str2.test(exp))
+				newExp = exp.replace(str2, str2.exec(exp)[1]);
 			return newExp;
 		case rules.COMBINING:
-            newExp = exp[1];
+			//(A&B)|(A&~B) = A
+			if(oper == op.OR){
+				str = /(\(([A-Z])\&((?!\2)[A-Z])\))\|(\(\2\&\~\3\))/;
+			}
+			//(A|B)&(A|~B) = A
+			else if (oper == op.AND) {
+				str = /(\(([A-Z])\|((?!\2)[A-Z])\))\&(\(\2\|\~\3\))/;
+			}
+            newExp = exp.replace(str, str.exec(exp)[2]); 
 			return newExp;
       default:
             return exp;

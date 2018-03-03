@@ -119,7 +119,7 @@ function processBoolean(expr, output)
         type: 'POST',
         url: 'http://localhost:8080/api/boolean/simplify/',
         dataType: 'json',
-        contentType: "application/json", //content sent from cliet to server
+        contentType: "application/json", //content sent from client to server
         data: JSON.stringify(input),
         success: function(){
             console.log('Succesful post request');
@@ -217,11 +217,14 @@ function isLetter(character){
 
 function insertAnds(input){
 	var arrayOfChecks = [
-		/([A-Z])([A-Z])/g,
-		/([A-Z])(\()/g,
-		/(\))([A-Z])/g
+		/([A-Z])([A-Z])/g, // AB
+		/([A-Z])(\()/g,	   // A(
+		/(\))([A-Z])/g,	   // )A
+		/([A-Z])([0-1])/g, // A0
+		/([0-1])([A-Z])/g, // 0A
+		/(\))(\()/g,	   // )(
 	]
-	for (var i = 0; i < 3; i++) {
+	for (var i = 0; i < arrayOfChecks.length; i++) {
 		while (arrayOfChecks[i].test(input.expr)) {
 			input.expr = input.expr.replace(arrayOfChecks[i],'$1&$2');
 		}
@@ -297,5 +300,3 @@ function findOtherBracket(arr, curBracketIndex) {
 		}
 	}
 }
-
-
