@@ -101,16 +101,43 @@ function processInput(){
 	}
 	output.innerHTML += "Initial input: " + origInput + "<br>";
     output.innerHTML += "Formatted: " + input.expr + "<br>";
-
+    
+    //authenticate
+    var userToken = authenticateUser('bob', '42');
     //process boolean expression
-    processBoolean(input.expr, output);
+    processBoolean(userToken, input.expr, output);
     //clear input textbox
     textbox.value = "";
     
 }
 
+function authenticateUser(username, password)
+{
+   var input = {};
+   var token;
+   input['username'] = 'bob';
+   input['password'] = '42'; 
+   jQuery.ajax({
+        type: 'POST',
+        url: 'http://localhost:8080/authenticate/',
+        dataType: 'json',
+        contentType: "application/json", //content sent from client to server
+        data: JSON.stringify(input),
+        success: function(res){
+            console.log('Authentication succeeded');
+            token = res['token'];
+            console.log(token);
+            return token;
+
+        },
+        error: function(){
+            console.log('Post request failed');
+        }
+    });
+}
+
 //post boolean expression to server
-function processBoolean(expr, output)
+function processBoolean(myToken, expr, output)
 {
    var request = {};
    request['input'] = expr;
@@ -122,19 +149,24 @@ function processBoolean(expr, output)
         dataType: 'json',
         contentType: "application/json", //content sent from client to server
         data: JSON.stringify(request),
+        headers : {
+            'Authorization': 'Bearer ' + myToken
+        },
         success: function(){
             console.log('Succesful post request');
-            getSteps(expr, output);
-            getResult(expr, output);
+            //ADJUST PER USER
+            getSteps(myToken, expr, output);
+            getResult(myToken, expr, output);
         },
         error: function(){
+            //TODO: check if failure is because it was entered before
             console.log('Post request failed');
         }
     });
 }
 
 //retrieve result from server
-function getResult(expr, output){
+function getResult(myToken, expr, output){
     var result;
      
     jQuery.ajax({
@@ -142,6 +174,9 @@ function getResult(expr, output){
         url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/result/',
         dataType: 'json',
         contentType: "application/json", //content sent from client to server
+        headers : {
+            'Authorization': 'Bearer ' + myToken
+        },
         success: function(res){
             console.log('Succesful get results request');
             //read result
@@ -159,7 +194,7 @@ function getResult(expr, output){
     });
 }
 
-function getSteps(expr, output){
+function getSteps(myToken, expr, output){
     var steps;
 
     jQuery.ajax({
@@ -167,6 +202,9 @@ function getSteps(expr, output){
         url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/steps/',
         dataType: 'json',
         contentType: "application/json", //content sent from client to server
+        headers : {
+            'Authorization': 'Bearer ' + myToken
+        },
         success: function(res){
             console.log('Succesful get steps request');
             //read steps

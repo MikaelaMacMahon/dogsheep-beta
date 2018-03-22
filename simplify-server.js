@@ -12,8 +12,20 @@ step3 VARCHAR(255),
 step4 VARCHAR(255),
 step5 VARCHAR(255),
 step6 VARCHAR(255)
+
+
+Once Node is running correctly, install needed dependencies:
+- npm install express
+- npm install body-parser
+
+- npm install passport
+- npm install passport-local
+- npm install jsonwebtoken
+- npm install express-jwt
+
 );
 */
+'use strict'; // set JavaScript to run in strict mode
 var http = require('http');
 var fs = require('fs');
 //TODO:: add dependency to readme
@@ -22,18 +34,80 @@ var Request = require('tedious').Request;
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
+const passport = require('passport');  
+const strategy = require('passport-local');
+const jwt = require('jsonwebtoken');
+const expressJwt = require('express-jwt');  
+
+const serverSecret = 'bobisawesome';
+var authenticate = expressJwt({secret : serverSecret});
+
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "authorization, content-type");
     res.header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
     next();
 });
 
 app.use(bodyParser.json());
+app.use(passport.initialize()); 
+
 var server = app.listen(8080, function () {
     console.log("Server running on port 8080");
 });
+
+// purpose: uses passport-local strategy to handle username/password authentication
+passport.use(new strategy( 
+  function(username, password, done) {
+    // (1) replace the following with data retrieved from database
+    // (2) ensure that password is not handled as plaintext
+    if(username === 'bob' && password === '42'){ 
+      done(null, { // stub call to a database; returning fixed info
+        id: 42, fname: 'bob', lname: 'no-name', contact: 'bob@no-name.com', legit: true
+      });
+    }
+    else {
+      done(null, false);
+    }
+  }
+));
+
+
+// purpose: generates a token based on provided user.id; token is set to expire based on expiresIn value
+function generateToken(req, res, next) {  
+  req.token = jwt.sign({
+    id: req.user.id,
+  }, serverSecret, {
+    expiresIn : 60*30 // set to expire in 30 minutes
+  });
+  next(); // pass on control to the next function
+}
+
+// purpose: return generated token to caller
+function returnToken(req, res) {  
+  res.status(200).json({
+    user: req.user,
+    token: req.token
+  });
+}
+
+// purpose: update or create user data in database and only return user.id
+function serializeUser(req, res, next) {  
+  db.updateOrCreate(req.user, function(err, user){
+    if(err) {return next(err);}
+      req.user = {
+        id: user.id
+      };
+      next();
+  });
+}
+  
+var db = {  
+  updateOrCreate: function(user, cb){
+    cb(null, user);
+  }
+};
 
 //setup database connection
 var db_conn_info = {
@@ -58,7 +132,14 @@ app.get('/api/', (req, res) => {
     res.status(200).json({"message": "Welcome to DogSheep Beta"});
 })
 */
-app.get('/api/boolean/simplify/:id/result', (request, response) => {
+
+// purpose: handles POST requests for '/authenticate' path
+app.post('/authenticate', passport.authenticate(  
+  'local', {
+    session: false
+  }), serializeUser, generateToken, returnToken);
+
+app.get('/api/boolean/simplify/:id/result', authenticate, (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/"  + request.params.id + "/result");
     var query = 'SELECT A.expResult FROM dbo.ExpResult A INNER JOIN dbo.Expressions B ON B.expID=A.expID WHERE B.exp=\''+ request.params.id + '\';';
     if(!query.includes("dbo.ExpResult")){
@@ -71,7 +152,8 @@ app.get('/api/boolean/simplify/:id/result', (request, response) => {
 
 //return JSON object containing all of the steps
 //handle get requests for/api/boolean/simplify/steps path
-app.get('/api/boolean/simplify/:id/steps', (request, response) => {
+//Submit provided token as part of the header using: authorization: Bearer full-token-string
+app.get('/api/boolean/simplify/:id/steps', authenticate, (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/" + request.params.id + "/steps");
     var query = 'SELECT A.step, A.stepNum FROM dbo.Steps A INNER JOIN dbo.Expressions B ON B.expID=A.expID WHERE B.exp=\'' + request.params.id + '\';';
     //TODO:: Add more error checking
@@ -83,7 +165,8 @@ app.get('/api/boolean/simplify/:id/steps', (request, response) => {
     getDBData(request,response, db_conn_info, query);
 });
 
-app.post('/api/boolean/simplify', (request, response) => {
+//Submit provided token as part of the header using: authorization: Bearer full-token-string
+app.post('/api/boolean/simplify', authenticate, (request, response) => {
     console.log("Post request recieved at '/api/boolean/simplify/");
     //retrieve body of request
     var newExp = request.body;
