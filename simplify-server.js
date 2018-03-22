@@ -1,141 +1,127 @@
 //Rest-based server using Node.js and Express.js
-
-
+/*
+AZURE DATABASE SETUP:
+//max 5 sets of brackets corresponding to 6 steps
+//TODO:: do not store the entire expression as first step
+CREATE TABLE Expressions (
+expID VARCHAR(255) NOT NULL UNIQUE,
+expresult VARCHAR(255) NOT NULL
+step1 VARCHAR(255) NOT NULL,
+step2 VARCHAR(255),
+step3 VARCHAR(255),
+step4 VARCHAR(255),
+step5 VARCHAR(255),
+step6 VARCHAR(255)
+);
+*/
 var http = require('http');
 var fs = require('fs');
+//TODO:: add dependency to readme
+var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
+
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
     next();
 });
+
 app.use(bodyParser.json());
 var server = app.listen(8080, function () {
     console.log("Server running on port 8080");
 });
 
+//setup database connection
+var db_conn_info = {
+    userName: 'super_user',
+    password: 'Dogsheepbeta1!',
+    server: 'dogsheepbeta.database.windows.net',
+    options: {
+        database: 'syde322dogsheepbeta',
+        encrypt: true,
+        rowCollectionOnRequestCompletion:true
+    }
+};
+
+
 var rules = {"NULL":0, "IDENTITY":1, "NULL_ELEMENT":2, "IDEMPOTENCY":3, "COMPLEMENTS":4, "DISTRIBUTIVITY":5, "COVERING":6, "COMBINING":7};
 
 var op = {"NULL":0, "AND": 1, "OR":2};
-
+/*
+//purpose for encryption
+app.get('/api/', (req, res) => {
+    console.log("GET request recieved for '/api/');
+    res.status(200).json({"message": "Welcome to DogSheep Beta"});
+})
+*/
 app.get('/api/boolean/simplify/:id/result', (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/"  + request.params.id + "/result");
-    //read file to return result
-    fs.readFile(__dirname + "/" + "results.json", 'utf8',
-    function (error, data) {
-    if(error && error.code == "ENOENT"){
-        console.error("Invalid filename provided");
-        return;
+    var query = 'SELECT A.expResult FROM dbo.ExpResult A INNER JOIN dbo.Expressions B ON B.expID=A.expID WHERE B.exp=\''+ request.params.id + '\';';
+    if(!query.includes("dbo.ExpResult")){
+        res.status(400).json({ error: "Invalid service request" });
+	console.error("Invalid service request");
+	return;
     }
-    try {
-        var expDB = JSON.parse(data);
-        var expResult = expDB[request.params.id].Result; //grab result of simplification
-        if(expResult == undefined) //check if incorrectly called
-        {
-            console.error("Expression simplify result is undefined");
-            response.status(400).json({error: "Invalid result request"});
-            return;
-        }
-        response.writeHead(200, {"Content-Type": "application/json"});
-        response.end(JSON.stringify(expResult));
-        //return result of simplification
-    } catch (error) {
-        response.status(400).json({error: "Invalid result request" });
-        console.error("Simplified expresion request invalid");
-        return;
-    }
-  });
+    getDBData(request,response, db_conn_info, query);
 });
 
 //return JSON object containing all of the steps
 //handle get requests for/api/boolean/simplify/steps path
 app.get('/api/boolean/simplify/:id/steps', (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/" + request.params.id + "/steps");
-    //read file to return steps
-    fs.readFile(__dirname + "/" + "results.json", 'utf8',
-    function (error, data) {
-    if(error && error.code == "ENOENT"){
-        console.error("Invalid filename provided");
-        return;
+    var query = 'SELECT A.step, A.stepNum FROM dbo.Steps A INNER JOIN dbo.Expressions B ON B.expID=A.expID WHERE B.exp=\'' + request.params.id + '\';';
+    //TODO:: Add more error checking
+    if(!query.includes("dbo.Steps")){
+        res.status(400).json({ error: "Invalid service request" });
+	console.error("Invalid service request");
+	return;
     }
-    try {
-        var expDB = JSON.parse(data);
-        var expSteps = expDB[request.params.id].Steps; //grab steps of simplification
-        if(expSteps == undefined) //check if incorrectly called
-        {
-            console.error("Expression simplify steps are undefined");
-            response.status(400).json({error: "Invalid steps request"});
-            return;
-        }
-        response.writeHead(200, {"Content-Type": "application/json"});
-        response.end(JSON.stringify(expSteps));
-        //return result of simplification
-    } catch (error) {
-        response.status(400).json({error: "Invalid steps request" });
-        console.error("Simplified expresion steps request invalid");
-        return;
-    }
-   });
+    getDBData(request,response, db_conn_info, query);
 });
 
 app.post('/api/boolean/simplify', (request, response) => {
     console.log("Post request recieved at '/api/boolean/simplify/");
-    //read file to return steps
-    
-    fs.readFile(__dirname + "/" + "results.json", 'utf8',
-    function (error, data) {
-    if(error && error.code == "ENOENT"){
-        console.error("Invalid filename provided");
-        return;
+    //retrieve body of request
+    var newExp = request.body;
+    var query = newExp['query'];
+    var exp = newExp['input'];
+    if(!query.includes("dbo.Expressions")){
+        res.status(400).json({ error: "Invalid service request" });
+	console.error("Invalid service request");
+	return;
     }
-    try {
-        var expDB;
-        if(fs.statSync("results.json").size == 0)
-        {
-            expDB = {}; 
-
-        }
-        else{
-            expDB = JSON.parse(data);
-        }
-        //retrieve body of request
-        var newExp = request.body;
-        //check if already in DB
-        if(expDB.hasOwnProperty(newExp)){
-            response.end(JSON.stringify(expDB[newExp]));
-            console.log("Expression has already been simplified");
-
-            return;
-        }     
-        //retrieve json simplification results
-        var simpResults = processBoolean(Object.keys(newExp)[0]);
-        expDB = Object.assign(expDB, simpResults); //add new expression entry FAILS HERE!!!!
-        var textResults = JSON.stringify(expDB);
-        fs.writeFileSync(__dirname + "/" + "results.json", textResults);  
-        response.end(textResults);
-//        response.end();
-         
-    }catch (error) {
-        response.status(400).json({error: "Invalid service request" });
-        console.error("Invalid service request");
-        return;
-    }
- });  
+   console.log(exp);
+   //retrieve json simplification results
+   var simpResults = processBoolean(exp);
+   //format quer
+   console.log(simpResults);
+   var str = "INSERT INTO Steps(expID, step, stepNum) SELECT dbo.Expressions.expID,";
+   var strEnd = "FROM dbo.Expressions WHERE exp=";
+   var index;
+   for(i in simpResults[exp].Steps){
+       query += str + '\'' + simpResults[exp].Steps[i] + '\',' + (i++) + strEnd + '\'' + exp + "\';";
+   }
+   //add result
+   query += "INSERT INTO ExpResult(expID, expResult) SELECT dbo.Expressions.expID,'" + simpResults[exp].Result + '\''+ strEnd + '\''+ exp +'\'' + ';';
+   console.log(query);
+   getDBData(request, response, db_conn_info,query);     
 })
 
 function processBoolean(exp){
+    console.log(exp);
     var output = {};
     var origExp = exp;
     output[origExp] = {};
-    output[origExp]["Steps"] = {};
     //var output = document.getElementById("output");
     var lowInd, highInd, simExp, len, modExp;
     //check without bracket analysis
     exp = detectSimp(exp);
-    output[origExp]["Steps"]["Step_1"] = exp;
+    output[origExp]["Steps"] = new Array();
+    output[origExp]["Steps"][0] = exp;
     console.log(output);
     //detect indices of brackets
     var parseData = detectOrder(exp);
@@ -177,8 +163,8 @@ function processBoolean(exp){
              simplified = true;
         }
         //Display number of steps depending on number of brackets
-        stepStr = "Step_" + (ctr + 1);
-        output[origExp].Steps[stepStr] = exp;
+        
+        output[origExp]["Steps"][ctr] = exp;
     }
     //process equation one more time to catch stragglers
     exp = detectSimp(exp);
@@ -576,4 +562,44 @@ function simplify(exp, code, oper){
       default:
             return exp;
     }
+}
+
+// run SQL query and obtain result set data
+function getDBData(req, res, db_conn_info, inputstring) {
+  var connection = new Connection(db_conn_info);
+  connection.on('connect', function(err) {
+    if (err) {
+      res.status(400).json({ error: "Invalid service request" });      
+      console.log(err)
+      return;
+    } 
+    console.log("SQL query submitted: " + inputstring);
+    var request = new Request(inputstring, function(err, rowCount, rows) {
+        if(err) {
+          res.status(400).json({ error: "Invalid SQL query request" });          
+          console.log('Invalid service request');
+          connection.close();
+          return;
+        }
+        // log number of rows returned
+        console.log(rowCount + ' row(s) returned');
+        // process results set data
+        var rowarray = [];
+        rows.forEach(function(columns){
+          var rowdata = new Object();
+          columns.forEach(function(column) {
+            rowdata[column.metadata.colName] = column.value;
+          });
+          rowarray.push(rowdata);
+        })
+        // close the connection and return results set
+        connection.close();        
+        var ret_value = JSON.stringify(rowarray);
+        console.log(ret_value);
+        res.end(ret_value);
+      }
+    );      
+    // execute SQL query
+    connection.execSql(request); 
+   }); 
 }

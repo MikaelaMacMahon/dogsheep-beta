@@ -112,15 +112,16 @@ function processInput(){
 //post boolean expression to server
 function processBoolean(expr, output)
 {
-   var input = {};
-   input[expr] = {};
-   
+   var request = {};
+   request['input'] = expr;
+   //fix to add actual id (check length of table) TODO:: add after the comma
+   request['query'] = "INSERT INTO dbo.Expressions(exp) VALUES ('" + expr + "');";
    jQuery.ajax({
         type: 'POST',
         url: 'http://localhost:8080/api/boolean/simplify/',
         dataType: 'json',
         contentType: "application/json", //content sent from client to server
-        data: JSON.stringify(input),
+        data: JSON.stringify(request),
         success: function(){
             console.log('Succesful post request');
             getSteps(expr, output);
@@ -135,7 +136,7 @@ function processBoolean(expr, output)
 //retrieve result from server
 function getResult(expr, output){
     var result;
-
+     
     jQuery.ajax({
         type: 'GET',
         url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/result/',
@@ -144,7 +145,10 @@ function getResult(expr, output){
         success: function(res){
             console.log('Succesful get results request');
             //read result
-            result = "Result: " + res;
+            result = JSON.stringify(res);
+            result = result.replace('exp',"");
+            result = result.replace(/(\}|\[\]\{|\")/gi, "");
+            result = "Result: " + result;
             output.innerHTML += result;
         },
         error: function(){
@@ -157,7 +161,7 @@ function getResult(expr, output){
 
 function getSteps(expr, output){
     var steps;
-    
+
     jQuery.ajax({
         type: 'GET',
         url: 'http://localhost:8080/api/boolean/simplify/' + expr + '/steps/',
@@ -166,6 +170,12 @@ function getSteps(expr, output){
         success: function(res){
             console.log('Succesful get steps request');
             //read steps
+/*            for(i in res['StepNum']){
+                var num = res['stepNum'] + 1;
+                steps = "Step " + num + ": "; 
+                steps = JSON.stringify(res);
+                console.log(steps);
+            }*/
             steps = JSON.stringify(res);
             steps = steps.replace(/(\}|\{|\")/gi, "");
             steps = steps.replace(/(\_)/gi, " ");
