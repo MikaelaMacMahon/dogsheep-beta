@@ -42,12 +42,12 @@ function inputChar(keyIn) {
         // alphabetise letters
         letters = letters.toUpperCase().split('').sort().join('');
         // get index of letter alphabetically after last letter
-		if (letters.substr(letters.length-1) == "Z") {
-		    textbox.value += "Z";
-		}
-		else {
+        if (letters.substr(letters.length-1) == "Z") {
+            textbox.value += "Z";
+        }
+        else {
             textbox.value += alphabet[alphabet.indexOf(letters.substr(letters.length-1))+1];
-		}
+        }
         return;
     }
     else if (keyIn == 3) {
@@ -71,8 +71,8 @@ function processInput(){
     var textbox = document.getElementById("expr");
     var output = document.getElementById("output");
     var input = {expr:textbox.value, exprArr:[], errorStatus:0, type:null};
-	var origInput = input.expr;
-	output.innerHTML = "";
+    var origInput = input.expr;
+    output.innerHTML = "";
 
     //check validity of expression
     checkValidity(input);
@@ -91,27 +91,28 @@ function processInput(){
         }
     }
     console.log("Before formatting: " + input.expr);
-	// remove spaces
+    // remove spaces
     input.expr = input.expr.replace(/\s/g, "");
     // replace AND, OR, and NOT with symbols
     formatExpr(input);
-	if (input.errorStatus == 3) {
-		output.innerHTML = "Somewhere, an apostrophe is placed after a character that is neither a variable, nor an apostrophe, nor a closing parenthesis.";
+    if (input.errorStatus == 3) {
+        output.innerHTML = "Somewhere, an apostrophe is placed after a character that is neither a variable, nor an apostrophe, nor a closing parenthesis.";
         return;
-	}
-	output.innerHTML += "Initial input: " + origInput + "<br>";
+    }
+    output.innerHTML += "Initial input: " + origInput + "<br>";
     output.innerHTML += "Formatted: " + input.expr + "<br>";
     
-    //authenticate
-    var userToken = authenticateUser('bob', '42');
-    //process boolean expression
-    processBoolean(userToken, input.expr, output);
+    //authenticate user and request steps/results
+   // var userToken = authenticateUser('bob', '42', input.expr, output);
+   //recieve token from redirect, from authentication
+   //TODO:: pass token in here
+   processBoolean(token, input.expr, output);
     //clear input textbox
     textbox.value = "";
     
 }
-
-function authenticateUser(username, password)
+/*
+function authenticateUser(username, password, exp, output)
 {
    var input = {};
    var token;
@@ -125,23 +126,26 @@ function authenticateUser(username, password)
         data: JSON.stringify(input),
         success: function(res){
             console.log('Authentication succeeded');
-            token = res['token'];
+            token = JSON.stringify(res['token']);
+            token = token.replace(/(\")/gi, "");
             console.log(token);
-            return token;
+            //begin processing boolean on token retrieval 
+            //processBoolean(token, exp, output);
+            //return token;
 
         },
+        //authenticate - not an actual
         error: function(){
             console.log('Post request failed');
         }
     });
 }
-
+*/
 //post boolean expression to server
 function processBoolean(myToken, expr, output)
 {
    var request = {};
    request['input'] = expr;
-   //fix to add actual id (check length of table) TODO:: add after the comma
    request['query'] = "INSERT INTO dbo.Expressions(exp) VALUES ('" + expr + "');";
    jQuery.ajax({
         type: 'POST',
@@ -158,10 +162,17 @@ function processBoolean(myToken, expr, output)
             getSteps(myToken, expr, output);
             getResult(myToken, expr, output);
         },
-        error: function(){
-            //TODO: check if failure is because it was entered before
+        error: function(res){
+            //If expression has been entered before
+            if(res.responseJSON.code == 84){
+                console.log(res.responseJSON.error);
+                getSteps(myToken, expr, output);
+                getResult(myToken, expr, output);
+            }
+            //TODO: check if failure is because it was entered before!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //TODO:: update readme!!
             console.log('Post request failed');
-        }
+        },
     });
 }
 
@@ -186,8 +197,7 @@ function getResult(myToken, expr, output){
             result = "Result: " + result;
             output.innerHTML += result;
         },
-        error: function(){
-            console.log('Get request failed');
+        error: function(res){
             result = "Result: " + expr;
             output.innerHTML += result;
         }
@@ -223,8 +233,13 @@ function getSteps(myToken, expr, output){
             console.log(steps);
             output.innerHTML += steps + "<br>";
         },
-        error: function(){
+        error: function(res){
             console.log('Get request failed');
+            //If a basic user (no access to step data)
+            if(res.responseJSON.code == 42){
+                output.innerHTML += "<br> Sorry, you are not a premium user. Upgrade to see the simplification steps. <br> <br>";
+
+            }
         }
     });
 }
@@ -232,119 +247,119 @@ function getSteps(myToken, expr, output){
 
 function checkValidity(input){
     //check if it's empty
-	if (input.expr == "") {
-		input.errorStatus = 1;
-		return;
-	}
-	else if (input.expr.match(/[^A-Za-z0-1\^\&\|\+\'\~\* \(\)]/g)) {
-		input.errorStatus = 2;
-		return;
-	}
+    if (input.expr == "") {
+        input.errorStatus = 1;
+        return;
+    }
+    else if (input.expr.match(/[^A-Za-z0-1\^\&\|\+\'\~\* \(\)]/g)) {
+        input.errorStatus = 2;
+        return;
+    }
     return;
 }
 
 function formatExpr(input){
-	for (var i = 0; i < alphabet.length; i++) {
-		input.expr = input.expr.split(alphabet[i].toLowerCase()).join(alphabet[i]);
-	}
-	input.expr = input.expr.replace(/AND/g,"&");
-	input.expr = input.expr.replace(/\*/g,"&");
-	input.expr = input.expr.replace(/OR/g,"|");
-	input.expr = input.expr.replace(/\+/g,"|");
-	input.expr = input.expr.replace(/NOT/g,"~");
-	insertAnds(input);
-	removeDoubleNegatives(input);
-	apostrophesToTildes(input);
-	return input.expr;
+    for (var i = 0; i < alphabet.length; i++) {
+        input.expr = input.expr.split(alphabet[i].toLowerCase()).join(alphabet[i]);
+    }
+    input.expr = input.expr.replace(/AND/g,"&");
+    input.expr = input.expr.replace(/\*/g,"&");
+    input.expr = input.expr.replace(/OR/g,"|");
+    input.expr = input.expr.replace(/\+/g,"|");
+    input.expr = input.expr.replace(/NOT/g,"~");
+    insertAnds(input);
+    removeDoubleNegatives(input);
+    apostrophesToTildes(input);
+    return input.expr;
 }
 
 function isLetter(character){
-	var isALetter = /([A-Z])/g;
-	return isALetter.test(character);
+    var isALetter = /([A-Z])/g;
+    return isALetter.test(character);
 }
 
 function insertAnds(input){
-	var arrayOfChecks = [
-		/([A-Z])([A-Z])/g, // AB
-		/([A-Z])(\()/g,	   // A(
-		/(\))([A-Z])/g,	   // )A
-		/([A-Z])([0-1])/g, // A0
-		/([0-1])([A-Z])/g, // 0A
-		/(\))(\()/g,	   // )(
-	]
-	for (var i = 0; i < arrayOfChecks.length; i++) {
-		while (arrayOfChecks[i].test(input.expr)) {
-			input.expr = input.expr.replace(arrayOfChecks[i],'$1&$2');
-		}
-	}
+    var arrayOfChecks = [
+        /([A-Z])([A-Z])/g, // AB
+        /([A-Z])(\()/g,       // A(
+        /(\))([A-Z])/g,       // )A
+        /([A-Z])([0-1])/g, // A0
+        /([0-1])([A-Z])/g, // 0A
+        /(\))(\()/g,       // )(
+    ]
+    for (var i = 0; i < arrayOfChecks.length; i++) {
+        while (arrayOfChecks[i].test(input.expr)) {
+            input.expr = input.expr.replace(arrayOfChecks[i],'$1&$2');
+        }
+    }
 }
 
 function removeDoubleNegatives(input) {
-	input.expr = input.expr.replace(/\'\'/g, "");
+    input.expr = input.expr.replace(/\'\'/g, "");
 }
 
 function apostrophesToTildes(input) {
-	var bracketIndex, i, j;
-	input.exprArray = input.expr.split("");
-	// loop through and find all instances of apostrophes
-	for (i = 0; i < input.expr.length; i++) {
-		// when you find an apostrophe
-		if (input.exprArray[i] === '\'') {
-			// if apostrophe directly after a letter			
-			if (isLetter(input.exprArray[i - 1])) {
-				// shuffle the letter forward
-				input.exprArray[i] = input.exprArray[i - 1];
-				// place the tilde before the letter 
-				input.exprArray[i - 1] = '~';
-			}
-			// if apostrophe directly after a closing parenthesis
-			else if (input.exprArray[i - 1] === ')') {
-				// find opening parenthesis
-				bracketIndex = findOtherBracket(input.exprArray, i - 1);
-				// shuffle parentheses & content forward by one
-				for (j = i - 1; j >= bracketIndex; j--) {
-					input.exprArray[j + 1] = input.exprArray[j];
-				}
-				// replace the apostrophe with a tilde
-				input.exprArray[bracketIndex] = '~';
-			}
-			else {
-				input.errorStatus = 3;
-				return;
-			}
-		}
-		input.expr = input.exprArray.join('');
-	}
+    var bracketIndex, i, j;
+    input.exprArray = input.expr.split("");
+    // loop through and find all instances of apostrophes
+    for (i = 0; i < input.expr.length; i++) {
+        // when you find an apostrophe
+        if (input.exprArray[i] === '\'') {
+            // if apostrophe directly after a letter            
+            if (isLetter(input.exprArray[i - 1])) {
+                // shuffle the letter forward
+                input.exprArray[i] = input.exprArray[i - 1];
+                // place the tilde before the letter 
+                input.exprArray[i - 1] = '~';
+            }
+            // if apostrophe directly after a closing parenthesis
+            else if (input.exprArray[i - 1] === ')') {
+                // find opening parenthesis
+                bracketIndex = findOtherBracket(input.exprArray, i - 1);
+                // shuffle parentheses & content forward by one
+                for (j = i - 1; j >= bracketIndex; j--) {
+                    input.exprArray[j + 1] = input.exprArray[j];
+                }
+                // replace the apostrophe with a tilde
+                input.exprArray[bracketIndex] = '~';
+            }
+            else {
+                input.errorStatus = 3;
+                return;
+            }
+        }
+        input.expr = input.exprArray.join('');
+    }
 }
 
 function findOtherBracket(arr, curBracketIndex) {
-	var i;
-	// increment trackOtherPairs when you find an opening parenthesis & decrement when you find a closing one
-	var trackOtherPairs = 0;
-	if (arr[curBracketIndex] === '(') {
-		// iterate forward through the string to find closing parenthesis
-		for (i = curBracketIndex + 1; i < arr.length; i++) {
-			if (arr[i] === '(')
-				trackOtherPairs++;
-			if (arr[i] === ')') {
-				if (trackOtherPairs)
-					trackOtherPairs--;
-				else return i;
-			}
-		}
-	}
-	else if (arr[curBracketIndex] === ')') {
-		// iterate backward through the string to find opening parenthesis
-		for (i = curBracketIndex - 1; i >= 0; i--) {
-			if (arr[i] === '(') {
-				if (trackOtherPairs) {
-					trackOtherPairs++;
-				}
-				else return i;
-			}
-			if (arr[i] === ')') {
-				trackOtherPairs--;
-			}
-		}
-	}
+    var i;
+    // increment trackOtherPairs when you find an opening parenthesis & decrement when you find a closing one
+    var trackOtherPairs = 0;
+    if (arr[curBracketIndex] === '(') {
+        // iterate forward through the string to find closing parenthesis
+        for (i = curBracketIndex + 1; i < arr.length; i++) {
+            if (arr[i] === '(')
+                trackOtherPairs++;
+            if (arr[i] === ')') {
+                if (trackOtherPairs)
+                    trackOtherPairs--;
+                else return i;
+            }
+        }
+    }
+    else if (arr[curBracketIndex] === ')') {
+        // iterate backward through the string to find opening parenthesis
+        for (i = curBracketIndex - 1; i >= 0; i--) {
+            if (arr[i] === '(') {
+                if (trackOtherPairs) {
+                    trackOtherPairs++;
+                }
+                else return i;
+            }
+            if (arr[i] === ')') {
+                trackOtherPairs--;
+            }
+        }
+    }
 }
