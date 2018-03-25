@@ -107,7 +107,7 @@ function processInput(){
    // var userToken = authenticateUser('bob', '42', input.expr, output);
    //recieve token from redirect, from authentication
    var token = decodeToken();   
- 
+
    processBoolean(token, input.expr, output);
     //clear input textbox
     textbox.value = "";
@@ -144,7 +144,6 @@ function processBoolean(myToken, expr, output)
         },
         error: function(res){
             console.log('Post request failed');
-            console.log(res);
             //If expression has been entered before
             if(res.responseJSON){
                 if(res.responseJSON.code == 84){

@@ -48,12 +48,10 @@ const secretKey = 'iwantshawarma';
 // validate the token supplied in request header
 function authenticate(request, response, next) {
     var token = request.headers.authorization;
-    console.log(token);
     var bytes = CryptoJS.AES.decrypt(token.toString(), secretKey);
     var tokenText = bytes.toString(CryptoJS.enc.Utf8);
     tokenText = tokenText.replace(/(\")/gi, "");
-    console.log(tokenText);
-    
+   
     try {
         var decoded = jwt.verify(tokenText, serverSecret);
     }catch(e){
@@ -113,7 +111,6 @@ passport.use(new strategy(
 // purpose: generates a token based on provided user.id; token is set to expire based on expiresIn value
 function generateToken(req, res, next) {  
   req.token = jwt.sign({
-    id: req.user.id,
     role: req.user.role,
   }, serverSecret, {
     expiresIn : 60*10// set to expire in 10 minutes
@@ -135,7 +132,6 @@ function serializeUser(req, res, next) {
   db.updateOrCreate(req.user, function(err, user){
     if(err) {return next(err);}
       req.user = {
-        id: user.id,
         role: user.role
       };
       next();

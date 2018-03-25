@@ -97,11 +97,6 @@ function redirect(myToken)
             'Authorization':myToken
         },
          success: function(res){
-             document.cookie = myToken;
-             console.log(document.cookie);
-             //document.write(res);
-
-             //TODO:: encrypt token here
              var tokenString = "?token=" + myToken;
              window.location.href = 'page.html' + tokenString; //TODO: pass back url
          },
