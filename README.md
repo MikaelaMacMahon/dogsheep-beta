@@ -8,22 +8,37 @@ DogSheep Beta is an adaption of "Wolfram Alpha" currently designed to accept Boo
 Equations are processed according to the order of operations, where the most internal parentheses group is processed first, before working outwards. Several simplification rules are then iteratively applied to these subsections, to produce a simplified expression. Once simplified, the modified expressed is then displayed to the user for review. 
 
 ### How to Use:
-1. Open page.html in a web browser
-2. Deploy the server
+1. Install dependencies
+```
+npm install express
+npm install body-parser
+npm install passport-local-roles
+npm install passport
+npm install passport-local
+npm install jsonwebtoken
+npm install express-jwt
+npm install crypto-js
+```
+2. Open page.html in a web browser
+3. Deploy the server
 ```
 nodejs simplify-server.js
 ```
-or with
+or
 ```
 node simplify-server.js
 ```
+4. Enter credentials 
+There are two users that correspond to:
+* username: bob, password: 42 (basic user)
+* username: jake, password: 43 (premium user (has access to simplification steps))
 
-3. Enter expression and retrieve simplified result (and intermediate steps)
+5. Enter expression and retrieve simplified result (and intermediate steps if a premium user)
 
 ## Implementation
 
 ### Simplification Rules
-A total of 6 simplification rules have been implemented:
+Several simplification rules have been implemented, with a few examples shown below:
 * A&1 = A
 * A|0 = A
 * A&0 = 0
@@ -31,14 +46,28 @@ A total of 6 simplification rules have been implemented:
 * A&A = A
 * A|A = A
 
-These rules can be applied to expressions with and without brackets. Some example use cases, with the corresponding output is provided below:
+These rules can be applied to expressions with and without brackets. 
+
+### Authentication
+There are two registerd users: bob and jake. Both are granted different role-based access to features of the application. 
+Logins will time out after 10min and redirect to the login page.
+
+### Encryption
+The password of the users are encrypted in the login client before being passed to the user. The token (displayed in the URL) is encrypted on the server side before it is passed to the front end. It is also decrypted within each subsequent REST api call to authenticate the user.
 
 ### Rest API
 A rest API it utilized to interface between the frontend and backend. This includes the use of three methods and three endpoints:
+#### POST Authentcation
+Get authenticated
+ - /localhost:8080/authenticate
+#### GET Redirect
+Get page.html data and redirect to main page
+ - /localhost:8080/authenticate
 #### POST Expression
+Post expressions
  - /localhost:8080/api/boolean/simplify
 #### Get Steps 
-Return simplification steps*
+Return simplification steps
 - /localhost:8080/api/boolean/simplify/:id/steps
 #### Get Result
 Return result of simplification
@@ -58,9 +87,7 @@ Return result of simplification
 * (ABCD&ABCD) = (ABCD)
 
 #### Limitations:
-In its initial development phase, DogSheep Beta has a few inherent limitations. Currently expression parsing is uni-directional. For example it will simplify (A+1) but not (1+A). The code is also limited to a single operand at time. For example A|A|A would be processed as A|A, and then A|A. Additionally, the contents of each bracket is only simplified once. 
+In its initial development phase, DogSheep Beta has a few inherent limitations. This includes the hard coding of users - and the lack of registration option.
 
 ### Future Implementations:
-In the future, we can see DogSheep Beta returning Boolean expressions in the same format as the user entered as input (ie. AND vs "&"). We would also like to migrate the expression storage to a database. Within this environment, we could store the results and steps of the simplification process for simple retrieval.
-
-
+In the future, we can see DogSheep Beta returning Boolean expressions in the same format as the user entered as input (ie. AND vs "&"). We would also like to add a registration feature.
