@@ -68,6 +68,7 @@ function inputChar(keyIn) {
 
 function processInput(){
     //retrieve input text
+     
     var textbox = document.getElementById("expr");
     var output = document.getElementById("output");
     var input = {expr:textbox.value, exprArr:[], errorStatus:0, type:null};
@@ -105,12 +106,21 @@ function processInput(){
     //authenticate user and request steps/results
    // var userToken = authenticateUser('bob', '42', input.expr, output);
    //recieve token from redirect, from authentication
-   //TODO:: pass token in here
+   var token = decodeToken();   
+ 
    processBoolean(token, input.expr, output);
     //clear input textbox
     textbox.value = "";
     
 }
+
+function decodeToken(){
+    var queryString = decodeURIComponent(window.location.search);
+    queryString = queryString.split("=");
+    var myToken = queryString[1];
+    return myToken;
+}
+
 /*
 function authenticateUser(username, password, exp, output)
 {
@@ -163,15 +173,21 @@ function processBoolean(myToken, expr, output)
             getResult(myToken, expr, output);
         },
         error: function(res){
-            //If expression has been entered before
-            if(res.responseJSON.code == 84){
-                console.log(res.responseJSON.error);
-                getSteps(myToken, expr, output);
-                getResult(myToken, expr, output);
-            }
-            //TODO: check if failure is because it was entered before!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //TODO:: update readme!!
             console.log('Post request failed');
+            console.log(res);
+            //If expression has been entered before
+            if(res.responseJSON){
+                if(res.responseJSON.code == 84){
+                    console.log(res.responseJSON.error);
+                    getSteps(myToken, expr, output);
+                    getResult(myToken, expr, output);
+                }
+            }
+            //if authentication has expired
+            if(res.status == 401){
+                var errorMessage = "?message=login_expired"
+                window.location.href = 'login.html' + errorMessage; //redirect to login page
+            }
         },
     });
 }
@@ -193,7 +209,10 @@ function getResult(myToken, expr, output){
             //read result
             result = JSON.stringify(res);
             result = result.replace('exp',"");
-            result = result.replace(/(\}|\[\]\{|\")/gi, "");
+            result = result.split(":");   
+            result = result[1] ;        
+            result = result.replace(/(\}|\[\]\{|\"|\])/gi, "");
+
             result = "Result: " + result;
             output.innerHTML += result;
         },
@@ -218,12 +237,8 @@ function getSteps(myToken, expr, output){
         success: function(res){
             console.log('Succesful get steps request');
             //read steps
-/*            for(i in res['StepNum']){
-                var num = res['stepNum'] + 1;
-                steps = "Step " + num + ": "; 
-                steps = JSON.stringify(res);
-                console.log(steps);
-            }*/
+            steps = JSON.parse(res);
+            console.log(steps);
             steps = JSON.stringify(res);
             steps = steps.replace(/(\}|\{|\")/gi, "");
             steps = steps.replace(/(\_)/gi, " ");

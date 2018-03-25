@@ -1,4 +1,8 @@
 var btn = document.getElementById("authBtn");
+var output = document.getElementById("errorText");
+//check for redirect after token expiration
+if(redirected()) output.innerHTML = "Sorry your login expired. Please sign back in to access application.";
+
 //error handling for different browsers
 btn.addEventListener("click", login);
 if(btn.addEventListener){
@@ -10,22 +14,29 @@ if(btn.addEventListener){
 
 function login(){
    
+    //add encryption in after rerouting
     var usernameBox = document.getElementById("username");
     var passwordBox = document.getElementById("password");
     //var output = document.getElementById("output");
     //encrypting username (other application of encryption)
-    //var encryptedUsername = hashCode2(usernameBox.value);
-   // console.log(encryptedUsername);
 
     //encyrpting password
-    //var encryptedPassword = hashCode2(passwordBox.value);
-    authenticateUser(username.value, password.value, username, password);
+    var encryptedPassword = hashCode2(passwordBox.value);
+    console.log(encryptedPassword);
+
+    authenticateUser(username.value, password.value, encryptedPassword);
 	//console.log(hashCode2(pass));
 	// if successful, redirect to other page, passing user info
 	// if not, don't
 }
 
-
+function redirected(){
+    var queryString = decodeURIComponent(window.location.search);
+    queryString = queryString.split("=");
+    var message = queryString[1];
+    if(message =='login_expired') return true;
+    else return false;
+}
 function hashCode2(str){
     var hash = 0;
     if (str.length == 0) return hash;
@@ -40,11 +51,11 @@ function hashCode2(str){
 
 //Authenticate user
 //TODO:: add output param back in
-function authenticateUser(eUsername, ePassword, username, password)
+function authenticateUser(username, password, ePassword)
 {
    var input = {};
    var token;
-   input['username'] = eUsername;
+   input['username'] = username;
    input['password'] = ePassword; 
    jQuery.ajax({
         type: 'POST',
@@ -56,7 +67,8 @@ function authenticateUser(eUsername, ePassword, username, password)
             console.log('Authentication succeeded');
             token = JSON.stringify(res['token']);
             token = token.replace(/(\")/gi, "");
-            console.log(token);
+            redirect(token);
+            //callback to next html
             //begin processing boolean on token retrieval 
             //processBoolean(token, exp, output);
             //return token;
@@ -64,10 +76,39 @@ function authenticateUser(eUsername, ePassword, username, password)
         },
         //authenticate - not an actual
         error: function(){
-            console.log('Post request failed');
             //if failed - output failure and clear inputs
-            username.value = "";
-            password.value = "";
+            console.log('Post request failed');
+            username = "";
+            password = "";
+
+            //notify users of failure
+            output.innerHTML = 'Authentication Failed: Username or password is incorrect. Please try again.';
         }
     });
+}
+
+function redirect(myToken)
+{
+    jQuery.ajax({
+         type: 'GET',
+         url: 'http://localhost:8080/',
+         contentType: "application/json", //content sent from client to server
+         headers : {
+            'Authorization': 'Bearer ' + myToken
+        },
+         success: function(res){
+             document.cookie = myToken;
+             console.log(document.cookie);
+             //document.write(res);
+
+             //TODO:: encrypt token here
+             var tokenString = "?token=" + myToken;
+             window.location.href = 'page.html' + tokenString; //TODO: pass back url
+         },
+         //authenticate - not an actual
+         error: function(res){
+                console.log("Redirect failed");
+         }
+     });
+              //  document.write(JSON.stringify)
 }

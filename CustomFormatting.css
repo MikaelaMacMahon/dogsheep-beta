@@ -1,3 +1,4 @@
+
 @font-face {
     font-family: Avenir;
     src: url(Avenir.ttf);
@@ -97,4 +98,30 @@ html, body {
 	margin-top: 10px;
     margin-left: 50%;
     z-index: 2;
+}
+#Login
+{
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+  width: 500px;
+  height: 300px;
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  background-color: #ffffff !important;
+  box-shadow: 5px 5px 8px #888888;
+}
+#username
+{
+	margin-bottom: 10px;
+}
+#password
+{
+	margin-bottom: 10px;
+}
+#errorText
+{
+	color: red;
 }

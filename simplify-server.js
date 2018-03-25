@@ -130,9 +130,13 @@ var op = {"NULL":0, "AND": 1, "OR":2};
 app.post('/authenticate', passport.authenticate(  
   'local', {
     session: false,
-   // successRedirect: 'file:///C:/Users/Mikaela/Documents/SYDE%20322/dogsheepbeta/page.html',
-    //failureRedirect: '/'
   }), serializeUser, generateToken, returnToken);
+
+  //get call for html redirect
+app.get('/', authenticate,(request, response) => {
+    console.log("GET request recieved at /");
+    response.sendFile(__dirname + '/page.html');
+});
 
 app.get('/api/boolean/simplify/:id/result', authenticate, (request, response) => {
     console.log("GET request recieved at /api/boolean/simplify/"  + request.params.id + "/result");
@@ -237,6 +241,7 @@ function processBoolean(exp){
         
         //update indices
         if(len != 0){
+            var i;
             for(i = 0; i < maxChecks -1; i++){
                 if(parseData.indexOp[i] > highInd){
                     parseData.indexOp[i] -= (len + 2);
@@ -683,10 +688,9 @@ function getDBData(req, res, db_conn_info, inputstring) {
           rowarray.push(rowdata);
         })
         // close the connection and return results set
-        connection.close();        
-        var ret_value = JSON.stringify(rowarray);
-        console.log(ret_value);
-        res.end(ret_value);
+        connection.close();  
+        console.log(rowArray);      
+        res.end(JSON.stringify(rowarray));
       }
     );      
     // execute SQL query
@@ -735,18 +739,16 @@ function authenticateUserInfo(username, password, done, db_conn_info)
     
                 roleData = roleData.replace(/(\")/gi, "");
                 passwordData = passwordData.replace(/(\")/gi, "");
-    
-                console.log(userData);
-    
+                 
                 //authenticate user
                 //TODO:: edit for other users/additional info
-                if(password === passwordData){ 
-                done(null, { 
-                    id: 42, fname: 'bob', lname: 'no-name',  role: roleData, legit: true
-                });
+                if(password == passwordData){ 
+                    done(null, { 
+                        role: roleData, legit: true
+                    });
                 }
                 else {
-                done(null, false);
+                    done(null, false);
                 }
            }
           
