@@ -121,36 +121,6 @@ function decodeToken(){
     return myToken;
 }
 
-/*
-function authenticateUser(username, password, exp, output)
-{
-   var input = {};
-   var token;
-   input['username'] = 'bob';
-   input['password'] = '42'; 
-   jQuery.ajax({
-        type: 'POST',
-        url: 'http://localhost:8080/authenticate/',
-        dataType: 'json',
-        contentType: "application/json", //content sent from client to server
-        data: JSON.stringify(input),
-        success: function(res){
-            console.log('Authentication succeeded');
-            token = JSON.stringify(res['token']);
-            token = token.replace(/(\")/gi, "");
-            console.log(token);
-            //begin processing boolean on token retrieval 
-            //processBoolean(token, exp, output);
-            //return token;
-
-        },
-        //authenticate - not an actual
-        error: function(){
-            console.log('Post request failed');
-        }
-    });
-}
-*/
 //post boolean expression to server
 function processBoolean(myToken, expr, output)
 {

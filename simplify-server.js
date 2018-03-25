@@ -22,6 +22,7 @@ npm install passport
 npm install passport-local
 npm install jsonwebtoken
 npm install express-jwt
+npm install crypto-js
 
 );
 */
@@ -33,6 +34,8 @@ var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
 var express = require('express');
 var bodyParser = require('body-parser');
+var CryptoJS = require("crypto-js");
+
 var app = express();
 const passport = require('passport');  
 const strategy = require('passport-local');
@@ -40,7 +43,27 @@ const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');  
 
 const serverSecret = 'bobisawesome';
-var authenticate = expressJwt({secret : serverSecret});
+const secretKey = 'iwantshawarma';
+//var authenticate = expressJwt(req, {secret : serverSecret});
+// validate the token supplied in request header
+function authenticate(request, response, next) {
+    var token = request.headers.authorization;
+    console.log(token);
+    var bytes = CryptoJS.AES.decrypt(token.toString(), secretKey);
+    var tokenText = bytes.toString(CryptoJS.enc.Utf8);
+    tokenText = tokenText.replace(/(\")/gi, "");
+    console.log(tokenText);
+    
+    try {
+        var decoded = jwt.verify(tokenText, serverSecret);
+    }catch(e){
+        response.status(403).json({
+            message: 'Unauthenticated user'
+        });
+        return response.end();
+    }
+    next();
+  }
 
 
 app.use(function(req, res, next) {
@@ -97,12 +120,12 @@ function generateToken(req, res, next) {
   });
   next(); // pass on control to the next function
 }
-//TODO:: redirect here?
+
 // purpose: return generated token to caller
 function returnToken(req, res) {  
     res.status(200).json({
     user: req.user,
-    token: req.token,
+    token: CryptoJS.AES.encrypt(JSON.stringify(req.token), secretKey).toString()
   });
   
 }
@@ -192,6 +215,13 @@ app.post('/api/boolean/simplify', authenticate, (request, response) => {
    var simpResults = processBoolean(exp);
    //format quer
    console.log(simpResults);
+   //Check to see if steps and results need to be posted (ie expression already in table)
+   var booleanTestStart = 'DECLARE @expID AS varchar SELECT @expID = expID FROM dbo.Expressions (NOLOCK) WHERE exp=\''
+       + exp + '\' IF @expID IS NULL BEGIN SET TRANSACTION ISOLATION LEVEL SERIALIZABLE BEGIN TRANSACTION BEGIN ';
+
+   var booleanTestEnd = 'END COMMIT TRANSACTION END';
+   
+  
    var str = "INSERT INTO Steps(expID, step, stepNum) SELECT dbo.Expressions.expID,";
    var strEnd = "FROM dbo.Expressions WHERE exp=";
    var index;
@@ -201,8 +231,11 @@ app.post('/api/boolean/simplify', authenticate, (request, response) => {
    }
    //add result
    query += "INSERT INTO ExpResult(expID, expResult) SELECT dbo.Expressions.expID,'" + simpResults[exp].Result + '\''+ strEnd + '\''+ exp +'\'' + ';';
-   console.log(query);
-   getDBData(request, response, db_conn_info,query);     
+
+   var booleanQuery = booleanTestStart + query + booleanTestEnd;
+
+   console.log(booleanQuery);
+   getDBData(request, response, db_conn_info,booleanQuery);     
 })
 
 function processBoolean(exp){
@@ -671,7 +704,6 @@ function getDBData(req, res, db_conn_info, inputstring) {
     console.log("SQL query submitted: " + inputstring);
     var request = new Request(inputstring, function(err, rowCount, rows) {
         if(err) {
-          res.status(400).json({ error: "Expression already simplified", code: 84});          
           console.log('Invalid service request');
           connection.close();
           return;
@@ -689,7 +721,6 @@ function getDBData(req, res, db_conn_info, inputstring) {
         })
         // close the connection and return results set
         connection.close();  
-        console.log(rowArray);      
         res.end(JSON.stringify(rowarray));
       }
     );      

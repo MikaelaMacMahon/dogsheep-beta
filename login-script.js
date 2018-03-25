@@ -94,7 +94,7 @@ function redirect(myToken)
          url: 'http://localhost:8080/',
          contentType: "application/json", //content sent from client to server
          headers : {
-            'Authorization': 'Bearer ' + myToken
+            'Authorization':myToken
         },
          success: function(res){
              document.cookie = myToken;
