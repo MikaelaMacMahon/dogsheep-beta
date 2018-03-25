@@ -13,6 +13,11 @@ Equations are processed according to the order of operations, where the most int
 ```
 nodejs simplify-server.js
 ```
+or with
+```
+node simplify-server.js
+```
+
 3. Enter expression and retrieve simplified result (and intermediate steps)
 
 ## Implementation
