@@ -54,6 +54,9 @@ function authenticate(request, response, next) {
    
     try {
         var decoded = jwt.verify(tokenText, serverSecret);
+        request.user = decoded;
+        //request.user.role = decoded.role;
+        console.log(decoded.role);
     }catch(e){
         response.status(403).json({
             message: 'Unauthenticated user'

@@ -134,7 +134,7 @@ function processBoolean(myToken, expr, output)
         contentType: "application/json", //content sent from client to server
         data: JSON.stringify(request),
         headers : {
-            'Authorization': 'Bearer ' + myToken
+            'Authorization': myToken
         },
         success: function(){
             console.log('Succesful post request');
@@ -153,7 +153,7 @@ function processBoolean(myToken, expr, output)
                 }
             }
             //if authentication has expired
-            if(res.status == 401){
+            if(res.status == 401 || res.status ==403){
                 var errorMessage = "?message=login_expired"
                 window.location.href = 'login.html' + errorMessage; //redirect to login page
             }
@@ -171,7 +171,7 @@ function getResult(myToken, expr, output){
         dataType: 'json',
         contentType: "application/json", //content sent from client to server
         headers : {
-            'Authorization': 'Bearer ' + myToken
+            'Authorization': myToken
         },
         success: function(res){
             console.log('Succesful get results request');
@@ -201,18 +201,33 @@ function getSteps(myToken, expr, output){
         dataType: 'json',
         contentType: "application/json", //content sent from client to server
         headers : {
-            'Authorization': 'Bearer ' + myToken
+            'Authorization': myToken
         },
         success: function(res){
             console.log('Succesful get steps request');
             //read steps
-            steps = JSON.parse(res);
-            console.log(steps);
+            //TODO:: HELP
+            console.log();
             steps = JSON.stringify(res);
-            steps = steps.replace(/(\}|\{|\")/gi, "");
-            steps = steps.replace(/(\_)/gi, " ");
-            steps = steps.replace(/(\:)/gi, ": ");
-            steps = steps.replace(/(\,)/gi, "<br>");
+            steps = steps.replace(/(\"|\]|\[)/gi, "");
+            console.log(steps);
+            steps = JSON.parse(steps);
+
+           // steps= steps.split("step: ");
+            /*console.log(steps[1]);
+            var i;
+            var outputStr;
+            for(i in steps){
+                var str = steps[i].split("stepNum: ")
+                output.innerHTML += str[0];
+                console.log(str);
+
+
+            }*/
+            //steps = steps.split("stepNum: ");
+            //steps = steps.replace(/(\_)/gi, " ");
+            //steps = steps.replace(/(\:)/gi, ": ");
+            //steps = steps.replace(/(\,)/gi, "<br>");
             //output steps
             console.log(steps);
             output.innerHTML += steps + "<br>";
@@ -220,9 +235,11 @@ function getSteps(myToken, expr, output){
         error: function(res){
             console.log('Get request failed');
             //If a basic user (no access to step data)
-            if(res.responseJSON.code == 42){
-                output.innerHTML += "<br> Sorry, you are not a premium user. Upgrade to see the simplification steps. <br> <br>";
-
+            if(res.responseJSON){
+                if(res.responseJSON.code == 42){
+                    output.innerHTML += "<br> Sorry, you are not a premium user. Upgrade to see the simplification steps. <br> <br>";
+    
+                }
             }
         }
     });
